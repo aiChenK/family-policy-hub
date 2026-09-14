@@ -1,0 +1,110 @@
+# ==========================================
+# 环境变量与敏感凭据 (Credentials & Secrets)
+# ==========================================
+.env
+.env.local
+.env.*.local
+!.env.example
+*.pem
+*.key
+*.cert
+
+# ==========================================
+# Python 运行缓存与构建产物 (Python Runtime)
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ==========================================
+# 虚拟环境 (Virtual Environments)
+# ==========================================
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ==========================================
+# 操作系统生成文件 (OS Generated Files)
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ==========================================
+# 编辑器与 IDE 配置 (Editor & IDE Settings)
+# ==========================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# ==========================================
+# 日志与临时文件 (Logs & Temporary Files)
+# ==========================================
+*.log
+*.tmp
+*.bak
+
+# ==========================================
+# 项目私密数据与备份 (Vault Data & Backups)
+# ==========================================
+# 忽略 data 目录下所有数据文件，仅保留机构公开客服电话基础配置
+data/*
+!data/insurance_phones.json
+!data/backups/
+!data/attachments/
+
+# 忽略数据自动快照备份，保留目录结构
+data/backups/*
+!data/backups/.gitkeep
+
+# 忽略用户上传的电子保单及凭据附件（人身险/车险/企业等隐私保密），保留目录结构
+data/attachments/*/*
+!data/attachments/*/.gitkeep
+
+# ==========================================
+# 前端工程依赖与临时缓存 (Frontend Node)
+# ==========================================
+node_modules/
+frontend/node_modules/
+.npm/
+.vite/
+frontend/.vite/
+
