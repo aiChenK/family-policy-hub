@@ -32,7 +32,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label class="block text-slate-600 font-medium mb-1">保单合同号 (用于查单/理赔)</label>
               <input v-model="formData.policyNo" placeholder="如：P20230325000188" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono" />
@@ -41,11 +41,94 @@
               <label class="block text-slate-600 font-medium mb-1">险种分类 *</label>
               <input v-model="formData.type" placeholder="如：重疾险+寿险、意外险、医疗消费险" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5" />
             </div>
-            <div>
+          </div>
+
+          <!-- 承保形式切换 (单人专属单 vs 家庭多人单) -->
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-users text-sky-600 text-sm"></i>
+                <div>
+                  <span class="font-bold text-slate-800 text-xs">承保形式</span>
+                  <span class="text-[11px] text-slate-400 ml-1.5">家庭意外险、全家共享医疗险等请选家庭多人单</span>
+                </div>
+              </div>
+              <div class="inline-flex bg-slate-200/80 p-0.5 rounded-lg text-xs font-medium">
+                <button
+                  type="button"
+                  @click="toggleFamilyPolicy(false)"
+                  :class="!formData.isFamilyPolicy ? 'bg-white shadow-xs text-sky-700 font-bold' : 'text-slate-500 hover:text-slate-800'"
+                  class="px-2.5 py-1 rounded-md transition"
+                >
+                  个人专属单
+                </button>
+                <button
+                  type="button"
+                  @click="toggleFamilyPolicy(true)"
+                  :class="formData.isFamilyPolicy ? 'bg-white shadow-xs text-purple-700 font-bold' : 'text-slate-500 hover:text-slate-800'"
+                  class="px-2.5 py-1 rounded-md transition flex items-center space-x-1"
+                >
+                  <i class="fa-solid fa-people-roof text-xs"></i>
+                  <span>家庭多人单</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 个人专属单：单选被保人 -->
+            <div v-if="!formData.isFamilyPolicy">
               <label class="block text-slate-600 font-medium mb-1">被保人家属 *</label>
-              <select v-model="formData.member" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5">
+              <select v-model="formData.member" class="w-full bg-white border border-slate-200 rounded-lg p-2.5">
                 <option v-for="m in members" :key="m" :value="m">{{ m }}</option>
               </select>
+            </div>
+
+            <!-- 家庭多人单：复选参保家属标签与分摊规则 -->
+            <div v-else class="p-3 bg-purple-50/60 rounded-xl border border-purple-200/80 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <label class="font-bold text-purple-900 flex items-center space-x-1.5">
+                  <i class="fa-solid fa-user-check text-purple-600"></i>
+                  <span>勾选参保家属 (支持多选) *</span>
+                </label>
+                <div class="flex space-x-2 text-[10px]">
+                  <button type="button" @click="selectAllMembers" class="text-purple-600 hover:text-purple-800 font-medium underline">全选</button>
+                  <button type="button" @click="clearAllMembers" class="text-slate-400 hover:text-slate-600">清空</button>
+                </div>
+              </div>
+
+              <!-- 成员多选标签列表 -->
+              <div class="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  v-for="m in members"
+                  :key="m"
+                  @click="toggleMemberSelection(m)"
+                  :class="(formData.insuredMembers || []).includes(m) ? 'bg-purple-600 text-white font-bold shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:border-purple-300'"
+                  class="px-2.5 py-1.5 rounded-lg text-xs transition flex items-center space-x-1.5"
+                >
+                  <i class="fa-solid" :class="(formData.insuredMembers || []).includes(m) ? 'fa-check text-[10px]' : 'fa-plus text-[10px] text-slate-400'"></i>
+                  <span>{{ m }}</span>
+                </button>
+              </div>
+              <p v-if="!formData.insuredMembers || formData.insuredMembers.length === 0" class="text-rose-500 text-[11px] font-medium">
+                请至少勾选一位家庭参保成员
+              </p>
+
+              <!-- 主被保人与保费分摊模式 -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2 border-t border-purple-100">
+                <div>
+                  <label class="block text-slate-700 font-medium mb-1">主被保人 (第一被保人)</label>
+                  <select v-model="formData.member" class="w-full bg-white border border-purple-200 rounded-lg p-2 text-xs">
+                    <option v-for="m in (formData.insuredMembers && formData.insuredMembers.length > 0 ? formData.insuredMembers : members)" :key="m" :value="m">{{ m }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-slate-700 font-medium mb-1">各成员保费预算分摊规则</label>
+                  <select v-model="formData.premiumSplitMode" class="w-full bg-white border border-purple-200 rounded-lg p-2 text-xs">
+                    <option value="payer">全部计入主被保人/投保人</option>
+                    <option value="equal">由参保家属平均分摊 (按人头分摊)</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -339,6 +422,59 @@ const emit = defineEmits(['update:show', 'save', 'delete']);
 
 const uploading = ref(false);
 const uploadError = ref('');
+
+function toggleFamilyPolicy(isFamily) {
+  props.formData.isFamilyPolicy = isFamily;
+  if (isFamily) {
+    if (!Array.isArray(props.formData.insuredMembers)) {
+      props.formData.insuredMembers = [];
+    }
+    if (props.formData.member && !props.formData.insuredMembers.includes(props.formData.member)) {
+      props.formData.insuredMembers.push(props.formData.member);
+    }
+    if (props.formData.insuredMembers.length === 0 && props.members && props.members.length > 0) {
+      props.formData.insuredMembers = [props.members[0]];
+    }
+    if (!props.formData.premiumSplitMode) {
+      props.formData.premiumSplitMode = 'payer';
+    }
+  } else {
+    // 切换为个人单
+    if (!props.formData.member && props.formData.insuredMembers?.length > 0) {
+      props.formData.member = props.formData.insuredMembers[0];
+    }
+  }
+}
+
+function toggleMemberSelection(m) {
+  if (!Array.isArray(props.formData.insuredMembers)) {
+    props.formData.insuredMembers = [];
+  }
+  const idx = props.formData.insuredMembers.indexOf(m);
+  if (idx > -1) {
+    props.formData.insuredMembers.splice(idx, 1);
+    if (props.formData.member === m) {
+      props.formData.member = props.formData.insuredMembers[0] || '';
+    }
+  } else {
+    props.formData.insuredMembers.push(m);
+    if (!props.formData.member) {
+      props.formData.member = m;
+    }
+  }
+}
+
+function selectAllMembers() {
+  props.formData.insuredMembers = [...(props.members || [])];
+  if (!props.formData.member && props.formData.insuredMembers.length > 0) {
+    props.formData.member = props.formData.insuredMembers[0];
+  }
+}
+
+function clearAllMembers() {
+  props.formData.insuredMembers = [];
+  props.formData.member = '';
+}
 
 function onStartDateChange() {
   if (props.formData.startDate && props.formData.startDate.length >= 10) {

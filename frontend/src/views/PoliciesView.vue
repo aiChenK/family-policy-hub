@@ -21,6 +21,7 @@
             class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
           >
             <option value="">全部险种</option>
+            <option value="家庭多人">👥 家庭多人单</option>
             <option value="重疾险">重疾险 / 寿险</option>
             <option value="意外险">意外险</option>
             <option value="医疗消费险">医疗消费险</option>
@@ -181,7 +182,11 @@ const searchQuery = ref('');
 const displayMembers = computed(() => {
   const set = new Set(props.members || []);
   (props.policies || []).forEach(p => {
-    if (p.member) set.add(p.member);
+    if (p.isFamilyPolicy && Array.isArray(p.insuredMembers)) {
+      p.insuredMembers.forEach(m => m && set.add(m));
+    } else if (p.member) {
+      set.add(p.member);
+    }
   });
   return Array.from(set);
 });
@@ -209,16 +214,30 @@ const filterStatus = ref('active');
 const viewMode = ref('grid');
 
 function countPoliciesByMember(name) {
-  return (props.policies || []).filter(p => p.member === name).length;
+  return (props.policies || []).filter(p => {
+    if (p.isFamilyPolicy && Array.isArray(p.insuredMembers) && p.insuredMembers.length > 0) {
+      return p.insuredMembers.includes(name);
+    }
+    return p.member === name;
+  }).length;
 }
 
 const filteredPolicies = computed(() => {
   const query = searchQuery.value.trim().toLowerCase();
   return (props.policies || []).filter(p => {
-    if (selectedMember.value && p.member !== selectedMember.value) {
-      return false;
+    if (selectedMember.value) {
+      const isInsured = (p.isFamilyPolicy && Array.isArray(p.insuredMembers) && p.insuredMembers.length > 0)
+        ? p.insuredMembers.includes(selectedMember.value)
+        : p.member === selectedMember.value;
+      if (!isInsured) return false;
     }
-    if (filterType.value && !p.type.includes(filterType.value)) return false;
+    if (filterType.value) {
+      if (filterType.value === '家庭多人') {
+        if (!p.isFamilyPolicy) return false;
+      } else if (!p.type || !p.type.includes(filterType.value)) {
+        return false;
+      }
+    }
     if (filterStatus.value === 'active' && p.status !== 'active') return false;
     if (filterStatus.value === 'stopped' && p.status !== 'stopped') return false;
 
@@ -229,7 +248,10 @@ const filteredPolicies = computed(() => {
       const matchMember = (p.member || '').toLowerCase().includes(query);
       const matchApplicant = (p.applicant || '').toLowerCase().includes(query);
       const matchAccount = (p.paymentAccount || '').toLowerCase().includes(query);
-      if (!matchName && !matchCompany && !matchPolicyNo && !matchMember && !matchApplicant && !matchAccount) {
+      const matchInsuredMembers = p.isFamilyPolicy && Array.isArray(p.insuredMembers)
+        ? p.insuredMembers.some(m => (m || '').toLowerCase().includes(query))
+        : false;
+      if (!matchName && !matchCompany && !matchPolicyNo && !matchMember && !matchApplicant && !matchAccount && !matchInsuredMembers) {
         return false;
       }
     }

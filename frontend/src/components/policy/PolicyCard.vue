@@ -13,7 +13,11 @@
       <!-- 顶栏：被保人姓名、险种Badge、公司、投保人关系、停保标识 -->
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2 flex-wrap min-w-0">
-          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 font-bold text-xs whitespace-nowrap border border-sky-100/90 shrink-0 shadow-2xs">
+          <div v-if="pol.isFamilyPolicy" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-50 text-purple-800 font-bold text-xs whitespace-nowrap border border-purple-200/90 shrink-0 shadow-2xs" :title="'参保家属：' + (pol.insuredMembers || []).join('、')">
+            <i class="fa-solid fa-people-roof text-[11px] text-purple-600"></i>
+            <span>{{ (pol.insuredMembers && pol.insuredMembers.length > 0) ? (pol.insuredMembers.length <= 2 ? pol.insuredMembers.join('、') : `${pol.insuredMembers.slice(0, 2).join('、')}等${pol.insuredMembers.length}人`) : pol.member }}</span>
+          </div>
+          <div v-else class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 font-bold text-xs whitespace-nowrap border border-sky-100/90 shrink-0 shadow-2xs">
             <i class="fa-solid fa-user-shield text-[11px] text-sky-600"></i>
             <span>{{ pol.member }}</span>
           </div>
@@ -29,7 +33,7 @@
           <span v-if="pol.status === 'stopped'" class="text-[11px] bg-slate-200/80 text-slate-600 px-2 py-0.5 rounded-full font-medium border border-slate-300/60">
             已停保
           </span>
-          <span v-if="pol.applicant && pol.applicant !== pol.member" class="text-[11px] bg-amber-50/90 text-amber-800 px-2 py-0.5 rounded-md border border-amber-200/60 inline-flex items-center gap-1" title="投保人家属">
+          <span v-if="pol.applicant && (pol.applicant !== pol.member || pol.isFamilyPolicy)" class="text-[11px] bg-amber-50/90 text-amber-800 px-2 py-0.5 rounded-md border border-amber-200/60 inline-flex items-center gap-1" title="投保人家属">
             <i class="fa-solid fa-hand-holding-heart text-[10px] text-amber-500"></i>
             <span>投保: {{ pol.applicant }}</span>
           </span>

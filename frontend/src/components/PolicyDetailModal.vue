@@ -8,6 +8,10 @@
             <span class="text-xs font-bold px-2.5 py-1 rounded-full" :class="getTypeBadgeClass(policy.type)">
               {{ policy.type }}
             </span>
+            <span v-if="policy.isFamilyPolicy" class="text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full text-xs font-bold border border-purple-200/80 flex items-center gap-1">
+              <i class="fa-solid fa-people-roof text-purple-600"></i>
+              <span>家庭多人单</span>
+            </span>
             <span v-if="policy.status === 'active'" class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-xs font-medium border border-emerald-200/60">
               <i class="fa-solid fa-shield-check mr-1"></i>在保正常
             </span>
@@ -19,8 +23,12 @@
           <div class="text-xs text-slate-500 mt-1 flex flex-wrap gap-2 items-center">
             <span>承保公司：<strong>{{ policy.company }}</strong></span>
             <span>·</span>
-            <span>被保人：<strong>{{ policy.member }}</strong></span>
-            <span v-if="policy.applicant && policy.applicant !== policy.member">· 投保人：{{ policy.applicant }}</span>
+            <span v-if="policy.isFamilyPolicy">
+              参保家属 (共 {{ (policy.insuredMembers || []).length }} 人)：
+              <strong class="text-purple-800">{{ (policy.insuredMembers || []).join('、') }}</strong>
+            </span>
+            <span v-else>被保人：<strong>{{ policy.member }}</strong></span>
+            <span v-if="policy.applicant">· 投保人：{{ policy.applicant }}</span>
           </div>
         </div>
         <button @click="$emit('close')" class="text-slate-400 hover:text-slate-600 p-1">
@@ -91,6 +99,12 @@
           <div v-if="policy.paymentAccount" class="col-span-2">
             <span class="text-slate-400">自动扣费银行/渠道：</span>
             <span class="text-slate-800 font-medium ml-1"><i class="fa-regular fa-credit-card text-sky-600 mr-1"></i>{{ policy.paymentAccount }}</span>
+          </div>
+          <div v-if="policy.isFamilyPolicy" class="col-span-2 p-2 bg-purple-50/70 rounded-lg border border-purple-100 flex items-center justify-between text-xs">
+            <span class="text-purple-900 font-medium">各成员预算分摊：</span>
+            <span class="text-purple-700 font-bold">
+              {{ policy.premiumSplitMode === 'equal' ? `参保家属平均分摊 (人均约 ¥${(((Number(policy.premium) || 0) / ((policy.insuredMembers || []).length || 1))).toFixed(2)}/年)` : `全部计入主被保人 (${policy.member})` }}
+            </span>
           </div>
           <div class="col-span-2 pt-2 border-t border-slate-200/60 flex flex-wrap justify-between gap-2 items-center">
             <div>

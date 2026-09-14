@@ -511,10 +511,15 @@ function cancelEdit() {
 
 function submitRecordEdit() {
   if (!editingRecord.value) return;
+  const targetYear = Number(editingRecord.value.year);
+  const originalKey = editingRecord.value.key;
+  const standardKey = `p_${editingRecord.value.policyId}_${targetYear}`;
+
   emit('save-record', {
-    key: editingRecord.value.key,
+    key: standardKey,
+    oldKey: (!isAddingNew.value && originalKey && originalKey !== standardKey) ? originalKey : undefined,
     policyId: editingRecord.value.policyId,
-    year: editingRecord.value.year,
+    year: targetYear,
     paid: editingRecord.value.paid,
     paidAmount: Number(editingRecord.value.paidAmount) || 0,
     paidDate: editingRecord.value.paidDate,

@@ -216,11 +216,17 @@ def update_payment_confirmation(record_key: str, info: dict) -> dict:
     """更新单笔保费手动确认状态"""
     data = load_payment_records_data()
     confirmations = data.setdefault("confirmations", {})
+    conf_data = info.get("confirmation", info) if isinstance(info.get("confirmation"), dict) else info
+
+    # 支持 Key 变更迁移（如修改扣费年份）：安全移除旧 Key
+    old_key = conf_data.get("oldKey") or info.get("oldKey")
+    if old_key and old_key in confirmations and old_key != record_key:
+        del confirmations[old_key]
+
     if record_key not in confirmations:
         confirmations[record_key] = {}
-    conf_data = info.get("confirmation", info) if isinstance(info.get("confirmation"), dict) else info
     for k, v in conf_data.items():
-        if k not in ("recordKey", "confirmation"):
+        if k not in ("recordKey", "confirmation", "oldKey"):
             confirmations[record_key][k] = v
     confirmations[record_key]["updatedAt"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     save_payment_records_data(data)

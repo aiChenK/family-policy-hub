@@ -109,7 +109,7 @@ export const PaymentScheduleEngine = {
       // 1年期短期连续保单：若保单有效在保 (status === 'active')，自动预测至下一年 (currentYear + 1)，同时兼容已有手动记录的最大年份
       let endYear = isShortTerm
         ? (p.status === 'active' ? Math.max(currentYear + 1, maxConfYear) : Math.max(currentYear, maxConfYear))
-        : (startYear + pYears - 1);
+        : Math.max(startYear + pYears - 1, maxConfYear);
       if (p.status === 'stopped' && p.stopYear) {
         endYear = Math.min(endYear, p.stopYear);
       }
@@ -174,6 +174,9 @@ export const PaymentScheduleEngine = {
           totalPeriods: totalPeriods,
           isShortTerm: isShortTerm,
           member: p.member,
+          isFamilyPolicy: !!p.isFamilyPolicy,
+          insuredMembers: Array.isArray(p.insuredMembers) ? p.insuredMembers : (p.member ? [p.member] : []),
+          premiumSplitMode: p.premiumSplitMode || 'payer',
           type: p.type,
           name: p.name,
           company: p.company,
@@ -431,13 +434,20 @@ export const PaymentScheduleEngine = {
       if (status === 'upcoming' && item.status !== 'upcoming') return false;
       if ((status === 'unpaid' || status === 'due') && item.status !== 'unpaid') return false;
       if (year && item.year !== Number(year)) return false;
-      if (member && item.member !== member) return false;
+      if (member) {
+        const isMatch = item.member === member ||
+          (item.isFamilyPolicy && Array.isArray(item.insuredMembers) && item.insuredMembers.includes(member));
+        if (!isMatch) return false;
+      }
 
       // 多选缴费对象过滤 (人/车)
       if (Array.isArray(selectedTargets) && selectedTargets.length > 0) {
         const matchedTarget = selectedTargets.some(target => {
           if (target.type === 'member') {
-            return !item.isVehicle && item.member === target.value;
+            return !item.isVehicle && (
+              item.member === target.value ||
+              (item.isFamilyPolicy && Array.isArray(item.insuredMembers) && item.insuredMembers.includes(target.value))
+            );
           }
           if (target.type === 'vehicle') {
             return item.isVehicle && item.plateNo === target.value;
@@ -449,9 +459,13 @@ export const PaymentScheduleEngine = {
 
       if (type && !item.type.includes(type)) return false;
       if (q) {
+        const matchInsured = item.isFamilyPolicy && Array.isArray(item.insuredMembers)
+          ? item.insuredMembers.some(m => (m || '').toLowerCase().includes(q))
+          : false;
         const matched =
           item.name.toLowerCase().includes(q) ||
           item.member.toLowerCase().includes(q) ||
+          matchInsured ||
           item.company.toLowerCase().includes(q) ||
           (item.plateNo && item.plateNo.toLowerCase().includes(q));
         if (!matched) return false;

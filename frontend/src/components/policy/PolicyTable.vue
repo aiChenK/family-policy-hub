@@ -31,9 +31,22 @@
             <td
               class="sticky left-0 z-10 py-3 px-4 whitespace-nowrap shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] border-r border-b border-slate-100 font-bold text-slate-900 bg-white group-hover:bg-slate-50/90 transition-colors"
             >
-              <div>{{ pol.member }}</div>
-              <div v-if="pol.applicant && pol.applicant !== pol.member" class="text-[10px] text-slate-400 font-normal">
-                投保: {{ pol.applicant }}
+              <div v-if="pol.isFamilyPolicy" class="space-y-1">
+                <div class="flex items-center space-x-1.5">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] bg-purple-100 text-purple-700 font-bold border border-purple-200/80">家庭多人</span>
+                  <span class="text-xs text-slate-900 font-bold" :title="'参保家属：' + (pol.insuredMembers || []).join('、')">
+                    {{ (pol.insuredMembers && pol.insuredMembers.length > 0) ? (pol.insuredMembers.length <= 2 ? pol.insuredMembers.join('、') : `${pol.insuredMembers.slice(0, 2).join('、')}等${pol.insuredMembers.length}人`) : pol.member }}
+                  </span>
+                </div>
+                <div v-if="pol.applicant" class="text-[10px] text-slate-400 font-normal">
+                  投保: {{ pol.applicant }}
+                </div>
+              </div>
+              <div v-else>
+                <div>{{ pol.member }}</div>
+                <div v-if="pol.applicant && pol.applicant !== pol.member" class="text-[10px] text-slate-400 font-normal">
+                  投保: {{ pol.applicant }}
+                </div>
               </div>
             </td>
 

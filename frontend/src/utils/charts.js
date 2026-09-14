@@ -107,7 +107,19 @@ export const AppCharts = {
 
     const memberMap = {};
     activePolicies.forEach(p => {
-      memberMap[p.member] = (memberMap[p.member] || 0) + Number(p.premium);
+      const prem = Number(p.premium) || 0;
+      if (p.isFamilyPolicy && Array.isArray(p.insuredMembers) && p.insuredMembers.length > 0) {
+        if (p.premiumSplitMode === 'equal') {
+          const splitAmount = prem / p.insuredMembers.length;
+          p.insuredMembers.forEach(m => {
+            memberMap[m] = (memberMap[m] || 0) + splitAmount;
+          });
+        } else {
+          memberMap[p.member] = (memberMap[p.member] || 0) + prem;
+        }
+      } else {
+        memberMap[p.member] = (memberMap[p.member] || 0) + prem;
+      }
     });
     const members = Object.keys(memberMap);
     const values = members.map(m => memberMap[m]);

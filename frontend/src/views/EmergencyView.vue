@@ -49,13 +49,20 @@
               <span class="px-2.5 py-0.5 rounded-full text-xs font-bold" :class="getTypeBadgeClass(pol.type)">
                 {{ pol.type }}
               </span>
-              <span v-if="pol.applicant && pol.applicant !== pol.member" class="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+              <span v-if="pol.isFamilyPolicy" class="text-[11px] text-purple-700 bg-purple-50 border border-purple-200/80 px-2 py-0.5 rounded font-medium flex items-center gap-1">
+                <i class="fa-solid fa-people-roof text-purple-600"></i>
+                <span>家庭共享</span>
+              </span>
+              <span v-if="pol.applicant && (pol.applicant !== pol.member || pol.isFamilyPolicy)" class="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                 投保人: {{ pol.applicant }}
               </span>
             </div>
             <h4 class="text-base font-bold text-slate-900 mt-1.5">{{ pol.name }}</h4>
             <div class="text-xs text-slate-500 mt-0.5">
               承保机构：<strong>{{ pol.company }}</strong> · 保额：<strong class="text-slate-800">{{ pol.amount }}</strong>
+              <span v-if="pol.isFamilyPolicy && pol.insuredMembers" class="ml-1 text-purple-700 font-medium">
+                (全家参保: {{ pol.insuredMembers.join('、') }})
+              </span>
             </div>
           </div>
           <a
@@ -160,7 +167,10 @@ function copyText(text, id) {
 
 const emergencyPolicies = computed(() => {
   return (props.activePolicies || []).filter(p => {
-    if (p.member !== selectedMember.value) return false;
+    const isInsured = (p.isFamilyPolicy && Array.isArray(p.insuredMembers) && p.insuredMembers.length > 0)
+      ? p.insuredMembers.includes(selectedMember.value)
+      : p.member === selectedMember.value;
+    if (!isInsured) return false;
     const t = p.type || '';
     return t.includes('医疗') || t.includes('意外') || t.includes('重疾');
   });

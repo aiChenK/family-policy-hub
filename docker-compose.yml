@@ -1,0 +1,16 @@
+services:
+  policy-hub:
+    build: .
+    image: family-policy-hub:latest
+    container_name: family-policy-hub
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8088}:8088"
+    environment:
+      - ACCESS_PASSWORD=${ACCESS_PASSWORD:-}
+      - PORT=8088
+      - HOST=0.0.0.0
+      - TZ=Asia/Shanghai
+    volumes:
+      # 持久化映射：保证所有保单数据、历史记录、附件与备份均保存在宿主机
+      - ./data:/app/data

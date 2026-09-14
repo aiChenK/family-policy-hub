@@ -2,6 +2,38 @@ import { ref } from 'vue';
 import { AppApi } from '../api/index.js';
 import { deepClone, DEFAULT_PHONE_CONFIG } from '../utils/helpers.js';
 
+/**
+ * 计算家庭成员的年度在保保费预算（支持单人保单与家庭多人保单分摊模式）
+ */
+export function calcMemberSummary(members = [], policies = []) {
+  const newSummary = {};
+  (members || []).forEach(m => {
+    let prem = 0;
+    (policies || []).filter(p => p && p.status === 'active').forEach(p => {
+      if (p.isFamilyPolicy && Array.isArray(p.insuredMembers) && p.insuredMembers.length > 0) {
+        if (p.premiumSplitMode === 'equal') {
+          // 均摊模式：该成员在被保人列表中则均摊保费
+          if (p.insuredMembers.includes(m)) {
+            prem += (Number(p.premium) || 0) / p.insuredMembers.length;
+          }
+        } else {
+          // payer 模式：全额计入主被保人
+          if (p.member === m) {
+            prem += Number(p.premium) || 0;
+          }
+        }
+      } else {
+        // 普通单人保单
+        if (p.member === m) {
+          prem += Number(p.premium) || 0;
+        }
+      }
+    });
+    newSummary[m] = Math.round(prem * 100) / 100;
+  });
+  return newSummary;
+}
+
 export function createInitialData() {
   return {
     updatedAt: '',
@@ -131,14 +163,7 @@ export function useAppData() {
     data.value.members = newMembers;
 
     // 重新计算并维护 memberSummary 预算
-    const newSummary = {};
-    newMembers.forEach(m => {
-      const prem = (data.value.policies || [])
-        .filter(p => p.member === m && p.status === 'active')
-        .reduce((sum, p) => sum + (Number(p.premium) || 0), 0);
-      newSummary[m] = prem;
-    });
-    data.value.memberSummary = newSummary;
+    data.value.memberSummary = calcMemberSummary(newMembers, data.value.policies || []);
 
     await saveData();
     showToast('家庭成员档案已成功同步保存！');
@@ -148,7 +173,7 @@ export function useAppData() {
     let updatedPolicies = 0;
     let updatedVehicles = 0;
 
-    // 同步保单被保人与投保人
+    // 同步保单被保人、投保人与家庭多人参保名单
     (data.value.policies || []).forEach(p => {
       let changed = false;
       if (p.member === oldName) {
@@ -157,6 +182,10 @@ export function useAppData() {
       }
       if (p.applicant === oldName) {
         p.applicant = newName;
+        changed = true;
+      }
+      if (Array.isArray(p.insuredMembers) && p.insuredMembers.includes(oldName)) {
+        p.insuredMembers = p.insuredMembers.map(m => m === oldName ? newName : m);
         changed = true;
       }
       if (changed) updatedPolicies++;
@@ -175,6 +204,9 @@ export function useAppData() {
       }
       if (changed) updatedVehicles++;
     });
+
+    // 级联重算家庭成员保费预算
+    data.value.memberSummary = calcMemberSummary(data.value.members || [], data.value.policies || []);
 
     await saveData();
     showToast(`已成功将 ${updatedPolicies} 笔保单与 ${updatedVehicles} 辆爱车归属人同步更新为【${newName}】！`);

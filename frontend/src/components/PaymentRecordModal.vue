@@ -302,13 +302,17 @@ const handleSubmit = () => {
       alert('请输入有效年份');
       return;
     }
-    formData.key = `p_${formData.policyId}_${formData.year}`;
   }
 
+  const targetYear = Number(formData.year);
+  const standardKey = formData.policyId ? `p_${formData.policyId}_${targetYear}` : formData.key;
+  const originalKey = formData.key;
+
   emit('save', {
-    key: formData.key,
+    key: standardKey,
+    oldKey: (!isAddMode.value && originalKey && originalKey !== standardKey) ? originalKey : undefined,
     policyId: formData.policyId,
-    year: formData.year,
+    year: targetYear,
     paid: formData.paid,
     paidAmount: Number(formData.paidAmount) || 0,
     paidDate: formData.paidDate,

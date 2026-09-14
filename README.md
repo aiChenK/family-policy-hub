@@ -53,3 +53,9 @@ docker compose up -d     # 启动容器
 ---
 
 > 💡 **开发者与二次开发**：关于双模运行机制、前后端本地调试、API 路由及架构说明，请参阅 [AGENTS.md](AGENTS.md)。
+
+---
+
+## 📄 开源协议
+
+本项目采用 [MIT License](LICENSE) 开源许可证。

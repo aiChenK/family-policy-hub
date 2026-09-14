@@ -370,7 +370,12 @@ const displayTotalAnnualPremium = computed(() => {
 });
 
 function countPoliciesByMember(name) {
-  return (props.allPolicies || []).filter(p => p.member === name).length;
+  return (props.allPolicies || []).filter(p => {
+    if (p.isFamilyPolicy && Array.isArray(p.insuredMembers) && p.insuredMembers.length > 0) {
+      return p.insuredMembers.includes(name);
+    }
+    return p.member === name;
+  }).length;
 }
 
 // 辅助函数：获取车辆最新一期或在保保单

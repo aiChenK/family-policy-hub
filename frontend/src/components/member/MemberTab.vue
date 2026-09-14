@@ -234,7 +234,13 @@ function calculateAge(birthDate) {
 
 function countActivePolicies(name) {
   if (!name) return 0;
-  return (props.policies || []).filter(p => p.member === name && p.status === 'active').length;
+  return (props.policies || []).filter(p => {
+    if (p.status !== 'active') return false;
+    if (p.isFamilyPolicy && Array.isArray(p.insuredMembers) && p.insuredMembers.length > 0) {
+      return p.insuredMembers.includes(name);
+    }
+    return p.member === name;
+  }).length;
 }
 
 function countVehicles(name) {
@@ -247,9 +253,18 @@ function getMemberAnnualPremium(name) {
   if (props.memberSummary && props.memberSummary[name] !== undefined) {
     return props.memberSummary[name];
   }
-  return (props.policies || [])
-    .filter(p => p.member === name && p.status === 'active')
-    .reduce((sum, p) => sum + (Number(p.premium) || 0), 0);
+  return (props.policies || []).filter(p => p && p.status === 'active').reduce((sum, p) => {
+    if (p.isFamilyPolicy && Array.isArray(p.insuredMembers) && p.insuredMembers.length > 0) {
+      if (p.premiumSplitMode === 'equal') {
+        if (p.insuredMembers.includes(name)) {
+          return sum + ((Number(p.premium) || 0) / p.insuredMembers.length);
+        }
+        return sum;
+      }
+      return p.member === name ? sum + (Number(p.premium) || 0) : sum;
+    }
+    return p.member === name ? sum + (Number(p.premium) || 0) : sum;
+  }, 0);
 }
 
 function getAvatarBgClass(member) {
@@ -324,7 +339,11 @@ function saveMemberForm() {
       }
 
       if (oldName !== targetName) {
-        const polCount = (props.policies || []).filter(p => p.member === oldName || p.applicant === oldName).length;
+        const polCount = (props.policies || []).filter(p =>
+          p.member === oldName ||
+          p.applicant === oldName ||
+          (p.isFamilyPolicy && Array.isArray(p.insuredMembers) && p.insuredMembers.includes(oldName))
+        ).length;
         const vehCount = (props.vehicles || []).filter(v => v.owner === oldName || v.driver === oldName).length;
 
         if (polCount > 0 || vehCount > 0) {
@@ -356,7 +375,10 @@ function moveMember(idx, offset) {
 
 function confirmDeleteMember(member) {
   const name = member.name;
-  const activePolCount = (props.policies || []).filter(p => p.member === name).length;
+  const activePolCount = (props.policies || []).filter(p =>
+    p.member === name ||
+    (p.isFamilyPolicy && Array.isArray(p.insuredMembers) && p.insuredMembers.includes(name))
+  ).length;
   const vehCount = (props.vehicles || []).filter(v => v.owner === name).length;
 
   if (activePolCount > 0 || vehCount > 0) {

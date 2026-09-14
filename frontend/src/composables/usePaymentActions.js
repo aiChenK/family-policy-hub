@@ -101,7 +101,18 @@ export function usePaymentActions({ data, activePolicies, saveData, showToast })
    * 保存或更新缴费记录详细信息（支持单期金额调整、日期修改、新一年续费登记）
    */
   const savePaymentRecordDetail = async (payload) => {
-    const { key, policyId, year, paid, paidAmount, paidDate, note } = payload;
+    let { key, oldKey, policyId, year, paid, paidAmount, paidDate, note } = payload;
+    
+    // 若具备 policyId 与 year，自动校准为系统规范的标准 Key: p_{policyId}_{year}
+    if (policyId && year) {
+      const standardKey = `p_${policyId}_${year}`;
+      if (!key) {
+        key = standardKey;
+      } else if (key !== standardKey) {
+        if (!oldKey) oldKey = key;
+        key = standardKey;
+      }
+    }
     if (!key) return;
 
     if (!data.value.paymentRecords) {
@@ -109,6 +120,11 @@ export function usePaymentActions({ data, activePolicies, saveData, showToast })
     }
     if (!data.value.paymentRecords.confirmations) {
       data.value.paymentRecords.confirmations = {};
+    }
+
+    // 若发生了 Key 迁移变更（如用户修改了扣费年份），自动清理旧 Key 避免残留幽灵流水
+    if (oldKey && oldKey !== key && data.value.paymentRecords.confirmations[oldKey]) {
+      delete data.value.paymentRecords.confirmations[oldKey];
     }
 
     const conf = {
@@ -122,6 +138,9 @@ export function usePaymentActions({ data, activePolicies, saveData, showToast })
       deleted: false,
       confirmedAt: new Date().toLocaleString()
     };
+    if (oldKey && oldKey !== key) {
+      conf.oldKey = oldKey;
+    }
     data.value.paymentRecords.confirmations[key] = conf;
 
     // 若对应的是历史归档记录，同步更新 archiveRecords 原生条目

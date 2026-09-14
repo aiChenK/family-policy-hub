@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { getTodayStr, deepClone } from '../utils/helpers.js';
 import { AppApi } from '../api/index.js';
+import { calcMemberSummary } from './useAppData.js';
 
 export function usePolicyActions({ data, saveData, showToast }) {
   const activeModalPolicy = ref(null);
@@ -25,14 +26,18 @@ export function usePolicyActions({ data, saveData, showToast }) {
 
   const openAddModal = () => {
     const todayStr = getTodayStr();
+    const defaultMember = data.value.members?.[0] || '成员';
     editForm.value = {
       show: true,
       isNew: true,
       data: {
         id: Date.now(),
         policyNo: '',
-        member: data.value.members?.[0] || '成员',
-        applicant: data.value.members?.[0] || '成员',
+        member: defaultMember,
+        applicant: defaultMember,
+        isFamilyPolicy: false,
+        insuredMembers: [defaultMember],
+        premiumSplitMode: 'payer',
         beneficiary: '法定受益人',
         paymentFrequency: '年缴',
         paymentAccount: '',
@@ -87,6 +92,14 @@ export function usePolicyActions({ data, saveData, showToast }) {
     if (!copy.attachments) {
       copy.attachments = [];
     }
+
+    // 家庭多人保单字段兼容回填
+    copy.isFamilyPolicy = !!copy.isFamilyPolicy;
+    copy.insuredMembers = Array.isArray(copy.insuredMembers) && copy.insuredMembers.length > 0
+      ? copy.insuredMembers
+      : (copy.member ? [copy.member] : []);
+    copy.premiumSplitMode = copy.premiumSplitMode || 'payer';
+
     editForm.value = {
       show: true,
       isNew: false,
@@ -100,6 +113,20 @@ export function usePolicyActions({ data, saveData, showToast }) {
       alert('请输入产品名称');
       return;
     }
+
+    // 家庭多人单校验
+    if (p.isFamilyPolicy) {
+      if (!Array.isArray(p.insuredMembers) || p.insuredMembers.length === 0) {
+        alert('家庭多人保单请至少勾选一位参保家属');
+        return;
+      }
+      if (!p.member || !p.insuredMembers.includes(p.member)) {
+        p.member = p.insuredMembers[0];
+      }
+    } else {
+      p.insuredMembers = p.member ? [p.member] : [];
+    }
+
     if (!p.startDate) {
       p.startDate = getTodayStr();
     }
@@ -122,6 +149,12 @@ export function usePolicyActions({ data, saveData, showToast }) {
       }
     }
     editForm.value.show = false;
+
+    // 保存保单后同步重算家庭成员保费预算
+    if (data.value.members && data.value.members.length > 0) {
+      data.value.memberSummary = calcMemberSummary(data.value.members, data.value.policies);
+    }
+
     saveData();
   };
 
@@ -145,6 +178,12 @@ export function usePolicyActions({ data, saveData, showToast }) {
 
       data.value.policies = data.value.policies.filter(p => p.id !== id);
       editForm.value.show = false;
+
+      // 删除保单后同步重算家庭成员保费预算
+      if (data.value.members && data.value.members.length > 0) {
+        data.value.memberSummary = calcMemberSummary(data.value.members, data.value.policies);
+      }
+
       await saveData();
       showToast('保单及关联附件已成功删除！');
     }

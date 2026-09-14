@@ -47,6 +47,13 @@
               <div class="flex items-center space-x-1.5">
                 <span class="font-semibold text-slate-900">{{ item.member }}</span>
                 <span
+                  v-if="item.isFamilyPolicy"
+                  class="px-1.5 py-0.5 rounded text-[10px] bg-purple-50 text-purple-700 border border-purple-200/80 font-semibold shrink-0 whitespace-nowrap"
+                  :title="'家庭多人单，参保家属：' + (item.insuredMembers || []).join('、')"
+                >
+                  家庭单 ({{ (item.insuredMembers || []).length }}人)
+                </span>
+                <span
                   v-if="item.isVehicle"
                   class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold shrink-0 whitespace-nowrap"
                   :class="item.plateType === 'green' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'"
