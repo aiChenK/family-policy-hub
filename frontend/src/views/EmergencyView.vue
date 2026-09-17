@@ -1,34 +1,35 @@
 <template>
-  <section class="space-y-6">
-    <div class="bg-rose-500 rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+  <section class="space-y-4 sm:space-y-6">
+    <div class="bg-rose-500 rounded-2xl p-4 sm:p-6 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5">
       <div>
         <div class="flex items-center space-x-2">
-          <i class="fa-solid fa-kit-medical text-2xl"></i>
-          <h3 class="text-lg font-bold">就医与意外理赔应急向导</h3>
+          <i class="fa-solid fa-kit-medical text-xl sm:text-2xl"></i>
+          <h3 class="text-base sm:text-lg font-bold">就医与意外理赔应急向导</h3>
         </div>
-        <p class="text-rose-100 text-xs mt-1">
+        <p class="text-rose-100 text-xs mt-1 leading-relaxed">
           当家人生病就医或发生意外时，快速检索对应成员可报销的医疗险/意外险保单，查看免赔额、报销范围及客服报案电话。
         </p>
       </div>
       <!-- 右侧：管理电话配置与选择成员切换 -->
-      <div class="flex items-center space-x-2 flex-wrap gap-y-2">
+      <div class="flex items-center gap-2 flex-wrap w-full md:w-auto justify-between md:justify-end">
         <button
           type="button"
           @click="$emit('open-phones')"
-          class="px-3 py-1.5 rounded-xl bg-rose-600/90 hover:bg-rose-700 text-white text-xs font-medium transition border border-rose-400/50 flex items-center space-x-1.5 shadow-sm"
+          class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-rose-600/90 hover:bg-rose-700 text-white text-xs font-medium transition border border-rose-400/50 flex items-center space-x-1.5 shadow-sm shrink-0 cursor-pointer"
           title="管理各保司报案电话与匹配规则"
         >
           <i class="fa-solid fa-phone-volume"></i>
-          <span>管理电话配置</span>
+          <span>管理电话</span>
         </button>
 
-        <div class="flex items-center space-x-1 bg-rose-600 p-1 rounded-xl">
+        <!-- 成员快速横滑切换栏 -->
+        <div class="flex items-center space-x-1 bg-rose-600 p-1 rounded-xl overflow-x-auto no-scrollbar py-1">
           <button
             v-for="m in members"
             :key="m"
             @click="selectedMember = m"
             :class="selectedMember === m ? 'bg-white text-rose-700 shadow-sm font-bold' : 'text-white hover:bg-rose-500'"
-            class="px-3 py-1.5 rounded-lg text-xs transition"
+            class="px-2.5 sm:px-3 py-1 rounded-lg text-xs transition shrink-0 cursor-pointer"
           >
             {{ m }}
           </button>
@@ -37,15 +38,15 @@
     </div>
 
     <!-- 成员可报销保单卡片 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
       <div
         v-for="pol in emergencyPolicies"
         :key="pol.id"
-        class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-3.5"
+        class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 sm:p-5 space-y-3.5"
       >
-        <div class="flex justify-between items-start gap-2">
-          <div>
-            <div class="flex items-center space-x-2">
+        <div class="flex flex-col sm:flex-row justify-between items-start gap-2.5">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center space-x-2 flex-wrap gap-y-1">
               <span class="px-2.5 py-0.5 rounded-full text-xs font-bold" :class="getTypeBadgeClass(pol.type)">
                 {{ pol.type }}
               </span>
@@ -57,7 +58,7 @@
                 投保人: {{ pol.applicant }}
               </span>
             </div>
-            <h4 class="text-base font-bold text-slate-900 mt-1.5">{{ pol.name }}</h4>
+            <h4 class="text-sm sm:text-base font-bold text-slate-900 mt-1.5">{{ pol.name }}</h4>
             <div class="text-xs text-slate-500 mt-0.5">
               承保机构：<strong>{{ pol.company }}</strong> · 保额：<strong class="text-slate-800">{{ pol.amount }}</strong>
               <span v-if="pol.isFamilyPolicy && pol.insuredMembers" class="ml-1 text-purple-700 font-medium">
@@ -68,14 +69,14 @@
           <a
             v-if="getCompanyPhone(pol.company, phoneConfig)"
             :href="'tel:' + getCompanyPhone(pol.company, phoneConfig)"
-            class="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs flex items-center space-x-1.5 transition border border-emerald-200 shrink-0"
+            class="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center space-x-1.5 transition border border-emerald-200 shrink-0"
           >
             <i class="fa-solid fa-phone"></i>
-            <span>报案: {{ getCompanyPhone(pol.company, phoneConfig) }}</span>
+            <span>报案热线: {{ getCompanyPhone(pol.company, phoneConfig) }}</span>
           </a>
           <span
             v-else
-            class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-400 text-[11px] shrink-0"
+            class="w-full sm:w-auto px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-400 text-[11px] shrink-0 text-center sm:text-left"
             title="未配置该承保公司报案电话，可在上方点击【管理电话配置】补充"
           >
             未配置电话

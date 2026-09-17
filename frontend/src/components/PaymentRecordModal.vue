@@ -1,19 +1,19 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+  <div v-if="isOpen" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4">
     <div
-      class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]"
+      class="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[94vh] sm:max-h-[90vh]"
     >
       <!-- 弹窗头部 -->
-      <div class="p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+      <div class="p-4 sm:p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
         <div class="flex items-center space-x-2.5">
           <div
-            class="w-9 h-9 rounded-xl flex items-center justify-center text-sm"
+            class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-sm shrink-0"
             :class="isAddMode ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'"
           >
             <i :class="isAddMode ? 'fa-solid fa-plus' : 'fa-solid fa-pen-to-square'"></i>
           </div>
           <div>
-            <h3 class="text-sm font-bold text-slate-900">
+            <h3 class="text-xs sm:text-sm font-bold text-slate-900">
               {{ isAddMode ? '登记新一期续保 / 补录缴费' : '修改台账记录' }}
             </h3>
             <p class="text-[11px] text-slate-500">
@@ -30,7 +30,7 @@
       </div>
 
       <!-- 核心表单区域 -->
-      <form @submit.prevent="handleSubmit" class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 text-xs">
+      <form @submit.prevent="handleSubmit" class="p-4 sm:p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 text-xs">
         <!-- 登记模式：选择关联保单与年份 -->
         <template v-if="isAddMode">
           <div>

@@ -4,8 +4,8 @@
       <table class="min-w-[1260px] w-full divide-y divide-slate-200 text-xs text-left border-separate border-spacing-0">
         <thead class="bg-slate-50 font-semibold text-slate-600">
           <tr>
-            <!-- 固定头部首列：车牌号 -->
-            <th class="sticky left-0 z-20 bg-slate-50 py-3 px-4 whitespace-nowrap min-w-[110px] shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] border-r border-slate-200/80">
+            <!-- 固定头部首列：车牌号 (移动端紧凑化) -->
+            <th class="sticky left-0 z-20 bg-slate-50 py-3 px-2.5 sm:px-4 whitespace-nowrap min-w-[92px] sm:min-w-[110px] shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] border-r border-slate-200/80">
               车牌号
             </th>
             <th class="py-3 px-4 whitespace-nowrap min-w-[140px]">车型</th>
@@ -19,8 +19,8 @@
             <th class="py-3 px-4 whitespace-nowrap min-w-[140px]">总保费</th>
             <th class="py-3 px-4 whitespace-nowrap min-w-[110px]">商业险到期日</th>
             <th class="py-3 px-4 whitespace-nowrap min-w-[140px]">保险状态</th>
-            <!-- 固定尾部列：操作列 -->
-            <th class="sticky right-0 z-20 bg-slate-50 py-3 px-4 text-right whitespace-nowrap min-w-[120px] shadow-[-2px_0_4px_-1px_rgba(0,0,0,0.06)] border-l border-slate-200/80">
+            <!-- 固定尾部列：操作列 (大屏固定吸附，手机端随表格自由横滑以释放中间视野) -->
+            <th class="sm:sticky sm:right-0 sm:z-20 bg-slate-50 py-3 px-3 sm:px-4 text-right whitespace-nowrap min-w-[110px] sm:min-w-[120px] sm:shadow-[-2px_0_4px_-1px_rgba(0,0,0,0.06)] sm:border-l border-slate-200/80">
               操作
             </th>
           </tr>
@@ -32,8 +32,8 @@
             class="group hover:bg-slate-50/80 transition-colors"
           >
             <!-- 固定头部首列：车牌号（稍微放大、加粗等宽、跟随整行hover底色） -->
-            <td class="sticky left-0 z-10 bg-white group-hover:bg-slate-50/90 transition-colors py-3 px-4 whitespace-nowrap shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] border-r border-slate-200/80">
-              <span class="font-mono font-bold text-sm text-slate-900 tracking-wide select-all">
+            <td class="sticky left-0 z-10 bg-white group-hover:bg-slate-50/90 transition-colors py-3 px-2.5 sm:px-4 whitespace-nowrap shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] border-r border-slate-200/80">
+              <span class="font-mono font-bold text-xs sm:text-sm text-slate-900 tracking-wide select-all">
                 {{ veh.plateNo }}
               </span>
             </td>
@@ -198,8 +198,8 @@
               </div>
             </td>
 
-            <!-- 固定尾部列：操作列（两行紧凑布局、跟随整行hover底色） -->
-            <td class="sticky right-0 z-10 bg-white group-hover:bg-slate-50/90 transition-colors py-2.5 px-4 text-right whitespace-nowrap shadow-[-2px_0_4px_-1px_rgba(0,0,0,0.06)] border-l border-slate-200/80">
+            <!-- 固定尾部列：操作列（大屏固定右侧，手机端随横滑自由展示） -->
+            <td class="sm:sticky sm:right-0 sm:z-10 bg-white group-hover:bg-slate-50/90 transition-colors py-2.5 px-3 sm:px-4 text-right whitespace-nowrap sm:shadow-[-2px_0_4px_-1px_rgba(0,0,0,0.06)] sm:border-l border-slate-200/80">
               <div class="inline-flex flex-col items-end justify-center gap-1.5">
                 <!-- 第一行：核心保单业务操作 -->
                 <div class="flex items-center gap-2">

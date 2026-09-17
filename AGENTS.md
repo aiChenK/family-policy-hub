@@ -139,3 +139,14 @@ python3 backend/restore.py restore 1
 #### 5. 方式四：前端 Web 界面离线导出与导入
 - **导出**：在界面设置中点击导出全量数据为 `family_insurance_backup_YYYY-MM-DD.json` 文件；
 - **导入**：在界面上传历史导出的 JSON 文件，前端会自动校验结构完整性并提交保存落盘。
+
+## 版本发布与 CHANGELOG 规范
+
+每当需要更新或发布新版本（如 `vX.Y.Z`）时，所有 AI Agent 及开发者必须严格遵守以下规范：
+
+1. **版本号多文件同步更新**：必须**同时更新** `package.json`、`package-lock.json` 中的 `version` 字段。
+2. **CHANGELOG 保持精简干练**：在 `CHANGELOG.md` 中撰写更新说明时，内容必须**保持简洁干练**，使用短句精准概括核心改进点，严禁大段冗长叙述。
+3. **禁止直接执行 Git 提交**：严禁直接调用命令执行 `git commit`、`git push` 或创建标签等提交操作；应在回复中生成规范精准的建议 Git 命令（包含推荐的提交信息与 Tag 命令），由用户确认后手动执行。
+
+
+

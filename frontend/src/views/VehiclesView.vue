@@ -12,110 +12,115 @@
     />
 
     <!-- 筛选栏与解耦的两步操作按钮 -->
-    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-wrap gap-3 items-center justify-between">
-      <div class="flex flex-wrap gap-2 items-center">
-        <!-- 搜索输入框 -->
-        <div class="relative">
+    <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+      <!-- 第一行：搜索框与主行动按钮组 -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div class="relative flex-1 min-w-0">
           <input
             v-model="searchQuery"
             placeholder="搜索车牌/车型/车主/保司..."
-            class="text-xs bg-slate-50 border border-slate-200 rounded-lg pl-7 pr-3 py-2 w-48 focus:w-60 transition-all font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+            class="text-xs bg-slate-50 border border-slate-200 rounded-xl pl-7 pr-3 py-2 w-full font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
           />
           <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]"></i>
         </div>
 
-        <!-- 车主与归属筛选 -->
-        <select
-          v-model="filterOwner"
-          class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
-        >
-          <option value="">全部车辆 ({{ vehicles.length }})</option>
-          <optgroup label="个人私家车">
-            <option v-for="m in members" :key="m" :value="m">{{ m }} 的车辆</option>
-          </optgroup>
-          <optgroup label="企业/公司车辆" v-if="hasCompanyVehicles">
-            <option value="__company__">所有公司公户车 ({{ companyVehicleCount }})</option>
-            <option v-for="c in companyNames" :key="c" :value="c">{{ c }}</option>
-          </optgroup>
-        </select>
+        <!-- 移动端并排的两步核心操作按钮 -->
+        <div class="grid grid-cols-2 sm:flex items-center gap-2 shrink-0">
+          <!-- 步骤一：录入车辆信息 -->
+          <button
+            @click="openAddVehicleModal"
+            class="inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-xs font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 transition border border-slate-200/80 shadow-2xs cursor-pointer"
+            title="第一步：录入车辆行驶证与车架号档案"
+          >
+            <i class="fa-solid fa-car text-sky-600"></i>
+            <span>添加爱车</span>
+          </button>
 
-        <!-- 到期与保单状态筛选 -->
-        <div class="inline-flex bg-slate-100 p-0.5 rounded-lg text-xs font-medium">
+          <!-- 步骤二：录入车险保单 -->
           <button
-            @click="filterStatus = 'all'"
-            :class="filterStatus === 'all' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-800'"
-            class="px-3 py-1.5 rounded-md transition cursor-pointer"
+            @click="openAddPolicyModal('')"
+            :disabled="vehicles.length === 0"
+            class="inline-flex items-center justify-center space-x-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl text-white bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            title="第二步：选择车辆录入当期或历年车险保单"
           >
-            全部
-          </button>
-          <button
-            @click="filterStatus = 'active'"
-            :class="filterStatus === 'active' ? 'bg-white shadow-sm text-emerald-700' : 'text-slate-500 hover:text-slate-800'"
-            class="px-3 py-1.5 rounded-md transition cursor-pointer"
-          >
-            正常在保
-          </button>
-          <button
-            @click="filterStatus = 'expiring'"
-            :class="filterStatus === 'expiring' ? 'bg-white shadow-sm text-amber-700 font-bold' : 'text-slate-500 hover:text-slate-800'"
-            class="px-3 py-1.5 rounded-md transition flex items-center space-x-1 cursor-pointer"
-          >
-            <span>待续保</span>
-            <span v-if="expiringSoonCount > 0" class="px-1.5 py-0.2 bg-amber-500 text-white text-[10px] rounded-full font-bold">{{ expiringSoonCount }}</span>
-          </button>
-          <button
-            @click="filterStatus = 'no_policy'"
-            :class="filterStatus === 'no_policy' ? 'bg-white shadow-sm text-slate-800 font-bold' : 'text-slate-500 hover:text-slate-800'"
-            class="px-3 py-1.5 rounded-md transition flex items-center space-x-1 cursor-pointer"
-          >
-            <span>待录保单</span>
-            <span v-if="vehiclesWithoutInsuranceCount > 0" class="px-1.5 py-0.2 bg-slate-400 text-white text-[10px] rounded-full">{{ vehiclesWithoutInsuranceCount }}</span>
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>录入车险保单</span>
           </button>
         </div>
       </div>
 
-      <!-- 右侧操作栏：解耦的两步按钮 -->
-      <div class="flex items-center space-x-2">
+      <!-- 第二行：车主筛选、到期状态胶囊与视图切换 -->
+      <div class="flex flex-wrap gap-2 items-center justify-between pt-1 border-t border-slate-100 sm:border-0 sm:pt-0">
+        <div class="flex items-center gap-2 flex-1 min-w-0 overflow-x-auto no-scrollbar py-0.5">
+          <!-- 车主与归属筛选 -->
+          <select
+            v-model="filterOwner"
+            class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 shrink-0"
+          >
+            <option value="">全部车辆 ({{ vehicles.length }})</option>
+            <optgroup label="个人私家车">
+              <option v-for="m in members" :key="m" :value="m">{{ m }} 的车辆</option>
+            </optgroup>
+            <optgroup label="企业/公司车辆" v-if="hasCompanyVehicles">
+              <option value="__company__">所有公司公户车 ({{ companyVehicleCount }})</option>
+              <option v-for="c in companyNames" :key="c" :value="c">{{ c }}</option>
+            </optgroup>
+          </select>
+
+          <!-- 到期与保单状态筛选 -->
+          <div class="inline-flex bg-slate-100 p-0.5 rounded-xl text-xs font-medium shrink-0">
+            <button
+              @click="filterStatus = 'all'"
+              :class="filterStatus === 'all' ? 'bg-white shadow-sm text-slate-900 font-bold' : 'text-slate-500 hover:text-slate-800'"
+              class="px-2.5 sm:px-3 py-1.5 rounded-lg transition cursor-pointer"
+            >
+              全部
+            </button>
+            <button
+              @click="filterStatus = 'active'"
+              :class="filterStatus === 'active' ? 'bg-white shadow-sm text-emerald-700 font-bold' : 'text-slate-500 hover:text-slate-800'"
+              class="px-2.5 sm:px-3 py-1.5 rounded-lg transition cursor-pointer"
+            >
+              在保
+            </button>
+            <button
+              @click="filterStatus = 'expiring'"
+              :class="filterStatus === 'expiring' ? 'bg-white shadow-sm text-amber-700 font-bold' : 'text-slate-500 hover:text-slate-800'"
+              class="px-2 sm:px-3 py-1.5 rounded-lg transition flex items-center space-x-1 cursor-pointer"
+            >
+              <span>待续保</span>
+              <span v-if="expiringSoonCount > 0" class="px-1.5 py-0.2 bg-amber-500 text-white text-[10px] rounded-full font-bold">{{ expiringSoonCount }}</span>
+            </button>
+            <button
+              @click="filterStatus = 'no_policy'"
+              :class="filterStatus === 'no_policy' ? 'bg-white shadow-sm text-slate-800 font-bold' : 'text-slate-500 hover:text-slate-800'"
+              class="px-2 sm:px-3 py-1.5 rounded-lg transition flex items-center space-x-1 cursor-pointer"
+            >
+              <span>待录</span>
+              <span v-if="vehiclesWithoutInsuranceCount > 0" class="px-1.5 py-0.2 bg-slate-400 text-white text-[10px] rounded-full">{{ vehiclesWithoutInsuranceCount }}</span>
+            </button>
+          </div>
+        </div>
+
         <!-- 视图切换 -->
-        <div class="inline-flex bg-slate-100 p-0.5 rounded-lg text-xs font-medium">
+        <div class="inline-flex bg-slate-100 p-0.5 rounded-xl text-xs font-medium shrink-0">
           <button
             @click="viewMode = 'grid'"
-            :class="viewMode === 'grid' ? 'bg-white shadow-sm text-sky-700' : 'text-slate-500'"
-            class="px-2.5 py-1 rounded-md cursor-pointer"
+            :class="viewMode === 'grid' ? 'bg-white shadow-sm text-sky-700 font-bold' : 'text-slate-500'"
+            class="px-2.5 py-1 rounded-lg cursor-pointer"
             title="卡片视图"
           >
             <i class="fa-solid fa-table-cells-large"></i>
           </button>
           <button
             @click="viewMode = 'table'"
-            :class="viewMode === 'table' ? 'bg-white shadow-sm text-sky-700' : 'text-slate-500'"
-            class="px-2.5 py-1 rounded-md cursor-pointer"
+            :class="viewMode === 'table' ? 'bg-white shadow-sm text-sky-700 font-bold' : 'text-slate-500'"
+            class="px-2.5 py-1 rounded-lg cursor-pointer"
             title="表格视图"
           >
             <i class="fa-solid fa-list"></i>
           </button>
         </div>
-
-        <!-- 步骤一：录入车辆信息 -->
-        <button
-          @click="openAddVehicleModal"
-          class="inline-flex items-center space-x-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 transition border border-slate-200/80 shadow-2xs cursor-pointer"
-          title="第一步：录入车辆行驶证与车架号档案"
-        >
-          <i class="fa-solid fa-car text-sky-600"></i>
-          <span>添加爱车</span>
-        </button>
-
-        <!-- 步骤二：录入车险保单 -->
-        <button
-          @click="openAddPolicyModal('')"
-          :disabled="vehicles.length === 0"
-          class="inline-flex items-center space-x-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl text-white bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          title="第二步：选择车辆录入当期或历年车险保单"
-        >
-          <i class="fa-solid fa-shield-halved"></i>
-          <span>录入车险保单</span>
-        </button>
       </div>
     </div>
 

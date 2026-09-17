@@ -1,19 +1,19 @@
 <template>
-  <div v-if="show" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden border border-slate-100 max-h-[92vh] flex flex-col">
+  <div v-if="show" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden border border-slate-100 max-h-[94vh] sm:max-h-[92vh] flex flex-col">
       <!-- 弹窗标题栏 -->
-      <div class="p-5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+      <div class="p-4 sm:p-5 bg-slate-50 border-b border-slate-100 flex justify-between items-center shrink-0">
         <div>
-          <h3 class="text-base font-bold text-slate-900">{{ isNew ? '添加新保单' : '编辑保单信息' }}</h3>
-          <p class="text-xs text-slate-400 mt-0.5">录入基础保障、合同信息与电子保单凭证，系统将自动推算缴费排期</p>
+          <h3 class="text-sm sm:text-base font-bold text-slate-900">{{ isNew ? '添加新保单' : '编辑保单信息' }}</h3>
+          <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">录入基础保障、合同信息与电子保单凭证，系统将自动推算缴费排期</p>
         </div>
-        <button @click="$emit('update:show', false)" class="text-slate-400 hover:text-slate-600">
+        <button @click="$emit('update:show', false)" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
       <!-- 表单主体 -->
-      <div class="p-6 overflow-y-auto space-y-5 text-xs custom-scrollbar flex-1">
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 text-xs custom-scrollbar flex-1">
         <!-- 1. 合同标识与当事人信息 -->
         <div class="space-y-3">
           <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
@@ -392,14 +392,14 @@
       </div>
 
       <!-- 底部操作按钮 -->
-      <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-        <button v-if="!isNew" @click="$emit('delete', formData.id)" class="text-rose-600 hover:text-rose-800 text-xs font-medium">
-          <i class="fa-regular fa-trash-can mr-1"></i>删除此保单
+      <div class="p-3.5 sm:p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2 shrink-0">
+        <button v-if="!isNew" @click="$emit('delete', formData.id)" class="text-rose-600 hover:text-rose-800 text-xs font-medium py-1.5 px-2 rounded-lg hover:bg-rose-50 transition">
+          <i class="fa-regular fa-trash-can mr-1"></i>删除
         </button>
         <div v-else></div>
-        <div class="space-x-2">
-          <button @click="$emit('update:show', false)" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-medium">取消</button>
-          <button @click="$emit('save')" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-medium">确认保存</button>
+        <div class="flex items-center space-x-2">
+          <button @click="$emit('update:show', false)" class="px-3.5 sm:px-4 py-2 bg-slate-200 hover:bg-slate-300 active:bg-slate-400 text-slate-700 rounded-xl text-xs font-semibold transition">取消</button>
+          <button @click="$emit('save')" class="px-4 sm:px-5 py-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white rounded-xl text-xs font-semibold shadow-sm transition">确认保存</button>
         </div>
       </div>
     </div>

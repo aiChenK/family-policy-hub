@@ -28,12 +28,46 @@ body {
   background: #94a3b8;
 }
 
+/* 移动端隐藏滚动条但保留平滑滑动 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 针对全面屏手机的安全区域内边距与外边距 */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* 消除移动端轻触的高亮暗色阴影 */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 防 iOS Safari 在小屏聚焦表单控件时自动放大视口 */
+@media screen and (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* 打印优化 */
 @media print {
-  header, .no-print {
+  header, .no-print, .mobile-tab-bar {
     display: none !important;
   }
   body {
     background-color: #ffffff !important;
   }
 }
+

@@ -1,21 +1,21 @@
 <template>
-  <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
+  <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-3xl overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh]">
       <!-- 弹窗顶部标题 -->
-      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white flex items-center justify-center text-lg shadow-md shadow-teal-100">
+      <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+        <div class="flex items-center space-x-2.5 sm:space-x-3">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white flex items-center justify-center text-base sm:text-lg shadow-md shadow-teal-100 shrink-0">
             <i class="fa-solid fa-phone-volume"></i>
           </div>
           <div>
-            <h3 class="text-base font-bold text-slate-800 tracking-tight">保险客服与报案电话配置</h3>
-            <p class="text-xs text-slate-500">统一维护保司客服专线与报案电话，系统根据保单承保机构关键字智能匹配并提供一键呼叫</p>
+            <h3 class="text-sm sm:text-base font-bold text-slate-800 tracking-tight">保险客服与报案电话配置</h3>
+            <p class="text-xs text-slate-500 line-clamp-1 sm:line-clamp-none">保单承保机构关键字智能匹配客服专线与报案电话</p>
           </div>
         </div>
         <button
           type="button"
           @click="closeModal"
-          class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100 transition"
+          class="text-slate-400 hover:text-slate-600 p-1.5 sm:p-2 rounded-lg hover:bg-slate-100 transition"
           title="关闭"
         >
           <i class="fa-solid fa-xmark text-lg"></i>
@@ -23,7 +23,7 @@
       </div>
 
       <!-- 弹窗内容主体 -->
-      <div class="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1">
+      <div class="p-3.5 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 custom-scrollbar flex-1">
         <!-- 概览与全局默认回退电话 -->
         <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="flex items-center space-x-2.5">
@@ -247,15 +247,15 @@
       </div>
 
       <!-- 弹窗底部操作条 -->
-      <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/70 flex items-center justify-between">
-        <div class="text-xs text-slate-500">
-          已配置 <strong class="text-slate-800">{{ (editConfig.phones || []).length }}</strong> 家保险机构电话
+      <div class="px-4 sm:px-6 py-3 sm:py-3.5 border-t border-slate-100 bg-slate-50/70 flex items-center justify-between gap-2">
+        <div class="text-[11px] sm:text-xs text-slate-500">
+          已配置 <strong class="text-slate-800">{{ (editConfig.phones || []).length }}</strong> 家机构电话
         </div>
-        <div class="flex items-center space-x-2.5">
+        <div class="flex items-center space-x-2">
           <button
             type="button"
             @click="closeModal"
-            class="px-4 py-1.5 text-xs text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg transition"
+            class="px-3 sm:px-4 py-1.5 text-xs text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg transition"
           >
             取消
           </button>
@@ -263,7 +263,7 @@
             type="button"
             @click="saveAll"
             :disabled="saving"
-            class="inline-flex items-center space-x-1.5 px-4 py-1.5 text-xs font-medium rounded-lg text-white bg-sky-600 hover:bg-sky-700 active:bg-sky-800 transition shadow-sm disabled:opacity-50"
+            class="inline-flex items-center space-x-1 sm:space-x-1.5 px-3.5 sm:px-4 py-1.5 text-xs font-medium rounded-lg text-white bg-sky-600 hover:bg-sky-700 active:bg-sky-800 transition shadow-sm disabled:opacity-50"
           >
             <i class="fa-solid" :class="saving ? 'fa-spinner fa-spin' : 'fa-floppy-disk'"></i>
             <span>{{ saving ? '保存中...' : '保存配置' }}</span>

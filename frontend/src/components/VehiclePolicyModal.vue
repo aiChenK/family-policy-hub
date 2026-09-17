@@ -1,23 +1,23 @@
 <template>
   <Teleport to="body">
-    <div v-if="show" class="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[60] !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white rounded-3xl max-w-3xl w-full shadow-2xl overflow-hidden border border-slate-100 max-h-[92vh] flex flex-col transition-all">
+    <div v-if="show" class="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[60] !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+      <div class="bg-white rounded-2xl sm:rounded-3xl max-w-3xl w-full shadow-2xl overflow-hidden border border-slate-100 max-h-[94vh] sm:max-h-[92vh] flex flex-col transition-all">
         <!-- 弹窗标题栏 -->
-        <div class="px-6 py-4 bg-gradient-to-r from-sky-50 via-indigo-50/60 to-purple-50/40 border-b border-sky-100 flex justify-between items-center shrink-0">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-sky-200">
-              <i class="fa-solid fa-file-contract text-base"></i>
+        <div class="px-4 sm:px-6 py-3.5 sm:py-4 bg-gradient-to-r from-sky-50 via-indigo-50/60 to-purple-50/40 border-b border-sky-100 flex justify-between items-center shrink-0">
+          <div class="flex items-center space-x-2.5 sm:space-x-3">
+            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-sky-200 shrink-0">
+              <i class="fa-solid fa-file-contract text-sm sm:text-base"></i>
             </div>
             <div>
               <div class="flex items-center space-x-2">
-                <h3 class="text-base font-bold text-slate-900">
+                <h3 class="text-sm sm:text-base font-bold text-slate-900">
                   {{ titleText }}
                 </h3>
                 <span v-if="selectedVehicle" class="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold shrink-0 whitespace-nowrap" :class="selectedVehicle.plateType === 'green' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'">
                   {{ selectedVehicle.plateNo }}
                 </span>
               </div>
-              <p class="text-xs text-slate-500 mt-0.5">
+              <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">
                 {{ subtitleText }}
               </p>
             </div>

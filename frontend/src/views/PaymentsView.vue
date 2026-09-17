@@ -1,19 +1,19 @@
 <template>
   <section class="space-y-6">
     <!-- 顶部操作与筛选总览栏 -->
-    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-      <div class="flex flex-wrap gap-4 items-center justify-between">
+    <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 sm:space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div class="flex items-center space-x-2.5">
-            <h3 class="text-base font-bold text-slate-900">家庭保险缴费台账与支出明细</h3>
-            <span class="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-medium">自动流转 · 支出台账</span>
+          <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+            <h3 class="text-sm sm:text-base font-bold text-slate-900">家庭保险缴费台账与支出明细</h3>
+            <span class="text-[10px] sm:text-xs bg-emerald-100 text-emerald-800 px-2 sm:px-2.5 py-0.5 rounded-full font-medium">自动流转 · 支出台账</span>
           </div>
           <p class="text-xs text-slate-500 mt-1">车险保单录入即自动计入实缴；长期与连续商业险到期自动按期代扣流转，无需逐笔手动打卡核验。</p>
         </div>
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-2 shrink-0">
           <button
             @click="openAddRecordModal"
-            class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center space-x-1.5 cursor-pointer"
+            class="w-full sm:w-auto px-3.5 py-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center justify-center space-x-1.5 cursor-pointer"
             title="支持提前登记新一年续保（如2027年）或补录历史实际扣款流水"
           >
             <i class="fa-solid fa-plus text-[11px]"></i>
@@ -22,14 +22,14 @@
         </div>
       </div>
 
-      <!-- 状态筛选胶囊与多维过滤器 -->
-      <div class="pt-2 border-t border-slate-100 flex flex-wrap gap-3 items-center justify-between">
+      <!-- 状态筛选胶囊与多维过滤器 (移动端纵向分层，桌面端横向对齐) -->
+      <div class="pt-2 border-t border-slate-100 flex flex-col sm:flex-row gap-2.5 sm:items-center justify-between">
         <!-- 状态快速筛选胶囊：仅保留已缴流水与未到期预测 -->
-        <div class="flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl text-xs font-medium">
+        <div class="flex items-center space-x-1 bg-slate-100 p-0.5 sm:p-1 rounded-xl text-xs font-medium overflow-x-auto no-scrollbar py-0.5 w-full sm:w-auto shrink-0">
           <button
             @click="paymentFilterStatus = 'paid'"
             :class="paymentFilterStatus === 'paid' ? 'bg-emerald-600 text-white shadow-sm font-semibold' : 'text-emerald-700 hover:bg-emerald-100/50'"
-            class="px-3.5 py-1.5 rounded-lg transition cursor-pointer flex items-center space-x-1.5"
+            class="flex-1 sm:flex-initial justify-center px-2.5 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer flex items-center space-x-1 sm:space-x-1.5 shrink-0"
           >
             <i class="fa-solid fa-receipt text-[11px]"></i>
             <span>已缴流水</span>
@@ -38,7 +38,7 @@
           <button
             @click="paymentFilterStatus = 'upcoming'"
             :class="paymentFilterStatus === 'upcoming' ? 'bg-slate-700 text-white shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900'"
-            class="px-3.5 py-1.5 rounded-lg transition cursor-pointer flex items-center space-x-1.5"
+            class="flex-1 sm:flex-initial justify-center px-2.5 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer flex items-center space-x-1 sm:space-x-1.5 shrink-0"
           >
             <i class="fa-regular fa-calendar-check text-[11px]"></i>
             <span>未到期预测</span>
@@ -48,65 +48,65 @@
             v-if="unpaidRecordsCount > 0"
             @click="paymentFilterStatus = 'unpaid'"
             :class="paymentFilterStatus === 'unpaid' ? 'bg-rose-600 text-white shadow-sm font-bold animate-pulse' : 'text-rose-700 hover:bg-rose-100/50'"
-            class="px-3 py-1.5 rounded-lg transition flex items-center space-x-1 cursor-pointer"
+            class="px-2.5 sm:px-3 py-1.5 rounded-lg transition flex items-center justify-center space-x-1 cursor-pointer shrink-0"
           >
             <span>扣款异常</span>
             <span class="px-1.5 py-0.2 bg-white text-rose-700 text-[10px] rounded-full font-extrabold">{{ unpaidRecordsCount }}</span>
           </button>
         </div>
 
-        <!-- 年份与险种下拉筛选 -->
-        <div class="flex flex-wrap items-center gap-2 text-xs">
-          <div class="relative">
+        <!-- 年份与险种下拉筛选 (小屏幕下占满全宽，三者平分空间，绝不折行溢出) -->
+        <div class="flex items-center gap-1.5 sm:gap-2 text-xs w-full sm:w-auto min-w-0 sm:justify-end">
+          <div class="relative flex-1 min-w-0">
             <input
               v-model="paymentSearchQuery"
-              placeholder="搜索产品/险种/车牌..."
-              class="bg-slate-50 border border-slate-200 rounded-lg pl-7 pr-3 py-1.5 text-xs text-slate-700 w-36 focus:w-48 transition-all"
+              placeholder="搜索产品/车牌..."
+              class="bg-slate-50 border border-slate-200 rounded-xl pl-7 pr-3 py-1.5 text-xs text-slate-700 w-full focus:bg-white transition-all"
             />
             <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]"></i>
           </div>
 
-          <select v-model="paymentFilterYear" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 font-medium text-slate-700">
+          <select v-model="paymentFilterYear" class="bg-slate-50 border border-slate-200 rounded-xl px-2 sm:px-2.5 py-1.5 font-medium text-slate-700 shrink-0 text-xs max-w-[95px] sm:max-w-none">
             <option value="">全部年份</option>
             <option v-for="y in paymentAvailableYears" :key="y" :value="y">{{ y }} 年</option>
           </select>
 
-          <select v-model="paymentFilterType" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 font-medium text-slate-700">
+          <select v-model="paymentFilterType" class="bg-slate-50 border border-slate-200 rounded-xl px-2 sm:px-2.5 py-1.5 font-medium text-slate-700 shrink-0 text-xs max-w-[95px] sm:max-w-none">
             <option value="">全部险种</option>
-            <option value="重疾">重疾险/寿险</option>
-            <option value="医疗">医疗消费险</option>
+            <option value="重疾">重疾/寿险</option>
+            <option value="医疗">医疗消费</option>
             <option value="意外">意外险</option>
-            <option value="车险">车险 / 财产险</option>
-            <option value="社保">社保/农保</option>
+            <option value="车险">车险</option>
+            <option value="社保">社保</option>
           </select>
         </div>
       </div>
 
-      <!-- 缴费对象独立快捷筛选行 (人/车单选) -->
-      <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2 text-xs">
-        <div class="flex items-center space-x-1.5 text-slate-500 font-medium shrink-0 mr-1">
+      <!-- 缴费对象独立快捷筛选行 (单行平滑横向滚动) -->
+      <div class="pt-2.5 border-t border-slate-100 flex items-center gap-1.5 text-xs overflow-x-auto no-scrollbar whitespace-nowrap py-0.5">
+        <div class="flex items-center space-x-1 text-slate-500 font-medium shrink-0 mr-1">
           <i class="fa-solid fa-users-viewfinder text-sky-600 text-xs"></i>
-          <span>缴费对象:</span>
+          <span>对象:</span>
         </div>
 
         <!-- 全部对象胶囊 -->
         <button
           @click="clearTargetFilter"
           :class="!selectedTarget ? 'bg-sky-600 text-white font-semibold shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800'"
-          class="px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1 cursor-pointer"
+          class="px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1 cursor-pointer shrink-0"
         >
           <span>全部对象</span>
           <span class="text-[10px] opacity-80">({{ totalCurrentRecordsCount }})</span>
         </button>
 
         <!-- 分组1: 家庭成员 (人，单选) -->
-        <div class="flex flex-wrap items-center gap-1.5">
+        <div class="flex items-center gap-1.5 shrink-0">
           <button
             v-for="m in displayMembers"
             :key="'m_' + m"
             @click="selectTarget('member', m)"
             :class="isTargetSelected('member', m) ? 'bg-sky-600 text-white font-semibold shadow-xs' : 'bg-slate-100/90 text-slate-700 hover:bg-slate-200/90'"
-            class="px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1.5 cursor-pointer border border-transparent"
+            class="px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1.5 cursor-pointer border border-transparent shrink-0"
           >
             <i class="fa-solid fa-user text-[10px]" :class="isTargetSelected('member', m) ? 'text-white' : 'text-sky-600'"></i>
             <span>{{ m }}</span>
@@ -115,16 +115,16 @@
         </div>
 
         <!-- 纵向分隔线 -->
-        <div v-if="displayVehicles.length > 0" class="h-4 w-px bg-slate-200 mx-1 hidden sm:block"></div>
+        <div v-if="displayVehicles.length > 0" class="h-4 w-px bg-slate-200 mx-1 shrink-0"></div>
 
         <!-- 分组2: 车辆资产 (车，仅展示车牌，单选) -->
-        <div class="flex flex-wrap items-center gap-1.5">
+        <div class="flex items-center gap-1.5 shrink-0">
           <button
             v-for="v in displayVehicles"
             :key="'v_' + v.plateNo"
             @click="selectTarget('vehicle', v.plateNo)"
             :class="isTargetSelected('vehicle', v.plateNo) ? 'bg-sky-600 text-white font-semibold shadow-xs' : 'bg-slate-100/90 text-slate-700 hover:bg-slate-200/90'"
-            class="px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1.5 cursor-pointer border border-transparent"
+            class="px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1.5 cursor-pointer border border-transparent shrink-0"
             :title="v.model ? `${v.plateNo} (${v.model})` : v.plateNo"
           >
             <i class="fa-solid fa-car text-[10px]" :class="isTargetSelected('vehicle', v.plateNo) ? 'text-white' : (v.plateType === 'green' ? 'text-emerald-600' : 'text-blue-600')"></i>
@@ -134,8 +134,8 @@
         </div>
 
         <!-- 当前选中提示与快速清除 -->
-        <div v-if="selectedTarget" class="flex items-center space-x-1.5 ml-auto text-[11px] text-slate-400">
-          <span>当前筛选: <strong class="text-sky-600 font-semibold">{{ selectedTarget.value }}</strong></span>
+        <div v-if="selectedTarget" class="flex items-center space-x-1.5 pl-2 shrink-0 text-[11px] text-slate-400">
+          <span>筛选: <strong class="text-sky-600 font-semibold">{{ selectedTarget.value }}</strong></span>
           <button
             @click="clearTargetFilter"
             class="text-slate-400 hover:text-rose-600 transition cursor-pointer p-0.5"

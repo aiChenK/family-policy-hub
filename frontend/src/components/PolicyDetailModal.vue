@@ -1,10 +1,10 @@
 <template>
-  <div v-if="policy" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150 max-h-[92vh] flex flex-col">
+  <div v-if="policy" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150 max-h-[94vh] sm:max-h-[92vh] flex flex-col">
       <!-- 弹窗头部 -->
-      <div class="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-start">
+      <div class="p-4 sm:p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-start shrink-0">
         <div>
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center space-x-2 flex-wrap gap-y-1">
             <span class="text-xs font-bold px-2.5 py-1 rounded-full" :class="getTypeBadgeClass(policy.type)">
               {{ policy.type }}
             </span>
@@ -19,8 +19,8 @@
               已停保
             </span>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mt-2">{{ policy.name }}</h3>
-          <div class="text-xs text-slate-500 mt-1 flex flex-wrap gap-2 items-center">
+          <h3 class="text-base sm:text-lg font-bold text-slate-900 mt-2">{{ policy.name }}</h3>
+          <div class="text-xs text-slate-500 mt-1 flex flex-wrap gap-1.5 sm:gap-2 items-center">
             <span>承保公司：<strong>{{ policy.company }}</strong></span>
             <span>·</span>
             <span v-if="policy.isFamilyPolicy">
@@ -31,13 +31,13 @@
             <span v-if="policy.applicant">· 投保人：{{ policy.applicant }}</span>
           </div>
         </div>
-        <button @click="$emit('close')" class="text-slate-400 hover:text-slate-600 p-1">
+        <button @click="$emit('close')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
       <!-- 核心内容 -->
-      <div class="p-6 space-y-4 text-xs overflow-y-auto custom-scrollbar flex-1">
+      <div class="p-4 sm:p-6 space-y-4 text-xs overflow-y-auto custom-scrollbar flex-1">
         <!-- 保单号醒目横幅 (带复制) -->
         <div class="p-3 bg-sky-50/60 rounded-xl border border-sky-100 flex items-center justify-between">
           <div class="flex items-center space-x-2">
@@ -192,16 +192,16 @@
       </div>
 
       <!-- 弹窗底部操作 -->
-      <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+      <div class="p-3.5 sm:p-4 bg-slate-50 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2 shrink-0">
         <button
           type="button"
           @click="$emit('view-payments', policy)"
-          class="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl font-medium text-xs transition flex items-center space-x-1.5 cursor-pointer shadow-2xs"
+          class="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-700 border border-emerald-200 rounded-xl font-medium text-xs transition flex items-center justify-center space-x-1.5 cursor-pointer shadow-2xs"
         >
           <i class="fa-solid fa-receipt text-emerald-600"></i>
           <span>查看该保单缴费流水与排期</span>
         </button>
-        <button @click="$emit('close')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium text-xs transition cursor-pointer">
+        <button @click="$emit('close')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 active:bg-slate-400 text-slate-700 rounded-xl font-semibold text-xs transition cursor-pointer">
           关闭
         </button>
       </div>

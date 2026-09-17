@@ -1,7 +1,7 @@
 services:
   policy-hub:
-    build: .
-    image: family-policy-hub:latest
+    image: aichenk/family-policy-hub:latest
+    # build: . # 本地基于源码构建时可开启
     container_name: family-policy-hub
     restart: unless-stopped
     ports:

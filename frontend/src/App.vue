@@ -34,7 +34,7 @@
       />
 
       <!-- 主视图路由容器 -->
-      <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 md:pb-8">
         <!-- Tab 1: 保障总览 -->
         <DashboardView
           v-if="currentTab === 'dashboard'"
@@ -200,6 +200,18 @@
         @update-companies="handleUpdateCompanies"
         @toast="showToast"
       />
+
+      <!-- 移动端专用吸底 TabBar -->
+      <MobileTabBar
+        :current-tab="currentTab"
+        :unpaid-count="unpaidCount"
+        :vehicles-expiring-count="vehiclesExpiringCount"
+        @update:current-tab="currentTab = $event"
+        @open-phones="showPhoneModal = true"
+        @open-members="openMemberModal('members')"
+        @open-companies="openMemberModal('companies')"
+        @export-ics="handleExportIcs"
+      />
     </template>
 
     <!-- 2. 系统就绪加载中兜底骨架（避免未命中分支导致的空白） -->
@@ -223,6 +235,7 @@ import { usePaymentActions } from './composables/usePaymentActions.js';
 
 // 组件引入
 import HeaderNav from './components/HeaderNav.vue';
+import MobileTabBar from './components/MobileTabBar.vue';
 import AuthLock from './components/AuthLock.vue';
 import ToastAlert from './components/ToastAlert.vue';
 import PolicyDetailModal from './components/PolicyDetailModal.vue';

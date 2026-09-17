@@ -1,13 +1,13 @@
 <template>
-  <section class="space-y-6">
-    <div class="bg-gradient-to-r from-sky-600 to-indigo-700 rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+  <section class="space-y-4 sm:space-y-6">
+    <div class="bg-gradient-to-r from-sky-600 to-indigo-700 rounded-2xl p-4 sm:p-6 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5">
       <div>
-        <h3 class="text-lg font-bold">家庭年度保费扣缴日历</h3>
-        <p class="text-sky-100 text-xs mt-1">按每年固定扣款月份排列，清晰掌握每个月的资金支出节点，避免因银行卡余额不足脱保。</p>
+        <h3 class="text-base sm:text-lg font-bold">家庭年度保费扣缴日历</h3>
+        <p class="text-sky-100 text-xs mt-1 leading-relaxed">按每年固定扣款月份排列，清晰掌握每个月的资金支出节点，避免因银行卡余额不足脱保。</p>
       </div>
       <button
         @click="$emit('export-ics')"
-        class="px-4 py-2 bg-white text-sky-800 hover:bg-sky-50 rounded-xl text-xs font-bold transition shadow-sm flex items-center space-x-2 shrink-0"
+        class="w-full sm:w-auto px-4 py-2.5 sm:py-2 bg-white text-sky-800 hover:bg-sky-50 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center space-x-2 shrink-0 cursor-pointer"
       >
         <i class="fa-solid fa-calendar-plus text-sky-600"></i>
         <span>导出并同步至手机日历 (.ics)</span>
@@ -15,7 +15,7 @@
     </div>
 
     <!-- 按月份分组扣费时间轴 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6">
       <div
         v-for="group in calendarGroups"
         :key="group.month"

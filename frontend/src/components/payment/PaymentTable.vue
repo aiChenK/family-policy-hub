@@ -5,8 +5,9 @@
         <thead class="bg-slate-50 font-semibold text-slate-600">
           <tr>
             <!-- 固定头部首列：应缴年份 / 扣款日 -->
-            <th class="sticky left-0 z-20 bg-slate-50 py-3.5 px-4 whitespace-nowrap min-w-[140px] shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] border-r border-slate-200/80">
-              应缴年份 / 扣款日
+            <th class="sticky left-0 z-20 bg-slate-50 py-3 sm:py-3.5 px-2.5 sm:px-4 whitespace-nowrap min-w-[96px] sm:min-w-[140px] shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] border-r border-slate-200/80">
+              <span class="hidden sm:inline">应缴年份 / 扣款日</span>
+              <span class="sm:hidden inline">扣款日</span>
             </th>
             <th class="py-3.5 px-4 whitespace-nowrap min-w-[130px]">被保人 / 车辆</th>
             <th class="py-3.5 px-4 whitespace-nowrap min-w-[95px]">险种</th>
@@ -15,8 +16,8 @@
             <th class="py-3.5 px-4 whitespace-nowrap min-w-[120px]">期数排期</th>
             <th class="py-3.5 px-4 text-right whitespace-nowrap min-w-[110px]">保费金额</th>
             <th class="py-3.5 px-4 text-center whitespace-nowrap min-w-[160px]">扣缴状态</th>
-            <!-- 固定尾部列：操作列 -->
-            <th class="sticky right-0 z-20 bg-slate-50 py-3.5 px-4 text-right whitespace-nowrap min-w-[140px] shadow-[-2px_0_4px_-1px_rgba(0,0,0,0.06)] border-l border-slate-200/80">
+            <!-- 固定尾部列：操作列 (大屏固定吸附，手机端随表格自由横滑以释放中间视野) -->
+            <th class="sm:sticky sm:right-0 sm:z-20 bg-slate-50 py-3 sm:py-3.5 px-3 sm:px-4 text-right whitespace-nowrap min-w-[120px] sm:min-w-[140px] sm:shadow-[-2px_0_4px_-1px_rgba(0,0,0,0.06)] sm:border-l border-slate-200/80">
               操作
             </th>
           </tr>
@@ -28,17 +29,17 @@
             class="group transition-colors"
             :class="[item.status === 'due' ? 'bg-amber-50/40 hover:bg-amber-50/70' : 'hover:bg-slate-50/80']"
           >
-            <!-- 固定头部首列：应缴年份与具体日期 -->
+            <!-- 固定头部首列：应缴年份与具体日期 (小屏自适应紧凑双行) -->
             <td
-              class="sticky left-0 z-10 py-3 px-4 whitespace-nowrap shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] border-r border-slate-200/80 border-b border-slate-100 transition-colors"
+              class="sticky left-0 z-10 py-2.5 sm:py-3 px-2.5 sm:px-4 whitespace-nowrap shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] border-r border-slate-200/80 border-b border-slate-100 transition-colors"
               :class="item.status === 'due' ? 'bg-amber-50/90 group-hover:bg-amber-100/90' : 'bg-white group-hover:bg-slate-50/90'"
             >
-              <div class="flex items-center space-x-1.5 font-mono">
-                <span class="font-bold text-sm" :class="item.year === currentYear ? 'text-sky-600' : 'text-slate-900'">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-1.5 font-mono">
+                <span class="font-bold text-xs sm:text-sm" :class="item.year === currentYear ? 'text-sky-600' : 'text-slate-900'">
                   {{ item.year }}
                 </span>
-                <span class="text-slate-300">·</span>
-                <span class="text-slate-700 font-medium text-xs">{{ item.dueDate }}</span>
+                <span class="text-slate-300 hidden sm:inline">·</span>
+                <span class="text-slate-700 font-medium text-[11px] sm:text-xs leading-none sm:leading-normal mt-0.5 sm:mt-0">{{ item.dueDate }}</span>
               </div>
             </td>
 
@@ -139,9 +140,9 @@
               </span>
             </td>
 
-            <!-- 固定尾部列：操作按钮 -->
+            <!-- 固定尾部列：操作按钮 (大屏固定右侧，小屏常规排列随横滑) -->
             <td
-              class="sticky right-0 z-10 py-3 px-4 text-right whitespace-nowrap shadow-[-2px_0_4px_-1px_rgba(0,0,0,0.06)] border-l border-slate-200/80 border-b border-slate-100 transition-colors"
+              class="sm:sticky sm:right-0 sm:z-10 py-2.5 sm:py-3 px-3 sm:px-4 text-right whitespace-nowrap sm:shadow-[-2px_0_4px_-1px_rgba(0,0,0,0.06)] sm:border-l border-slate-200/80 border-b border-slate-100 transition-colors"
               :class="item.status === 'due' ? 'bg-amber-50/90 group-hover:bg-amber-100/90' : 'bg-white group-hover:bg-slate-50/90'"
             >
               <div class="inline-flex items-center space-x-1.5">

@@ -1,16 +1,16 @@
 <template>
   <Teleport to="body">
-    <div v-if="show" class="fixed inset-0 top-0 left-0 right-0 bottom-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden border border-slate-100 max-h-[92vh] flex flex-col">
+    <div v-if="show" class="fixed inset-0 top-0 left-0 right-0 bottom-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden border border-slate-100 max-h-[94vh] sm:max-h-[92vh] flex flex-col">
       <!-- 标题栏 -->
-      <div class="p-5 bg-gradient-to-r from-sky-50 to-indigo-50 border-b border-sky-100 flex justify-between items-center">
-        <div class="flex items-center space-x-2.5">
-          <div class="w-9 h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center shadow-md shadow-sky-200">
+      <div class="p-4 sm:p-5 bg-gradient-to-r from-sky-50 to-indigo-50 border-b border-sky-100 flex justify-between items-center shrink-0">
+        <div class="flex items-center space-x-2 sm:space-x-2.5">
+          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center shadow-md shadow-sky-200 shrink-0">
             <i class="fa-solid fa-car"></i>
           </div>
           <div>
-            <h3 class="text-base font-bold text-slate-900">{{ isNew ? '添加爱车档案' : '编辑车辆基本信息' }}</h3>
-            <p class="text-xs text-slate-500 mt-0.5">录入行驶证基本信息与证件凭证（车险保单可在添加后独立录入）</p>
+            <h3 class="text-sm sm:text-base font-bold text-slate-900">{{ isNew ? '添加爱车档案' : '编辑车辆基本信息' }}</h3>
+            <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">录入行驶证基本信息与证件凭证（车险保单可在添加后独立录入）</p>
           </div>
         </div>
         <button @click="$emit('update:show', false)" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-white/60 transition">
@@ -19,7 +19,7 @@
       </div>
 
       <!-- 表单主体 -->
-      <div class="p-6 overflow-y-auto space-y-4 text-xs custom-scrollbar flex-1">
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs custom-scrollbar flex-1">
         <!-- 车牌与车牌类型 -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="sm:col-span-2">
@@ -307,14 +307,14 @@
       </div>
 
       <!-- 底部操作按钮 -->
-      <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-        <button v-if="!isNew" @click="$emit('delete', formData.id)" class="text-rose-600 hover:text-rose-800 text-xs font-medium">
-          <i class="fa-regular fa-trash-can mr-1"></i>删除此车辆
+      <div class="p-3.5 sm:p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2 shrink-0">
+        <button v-if="!isNew" @click="$emit('delete', formData.id)" class="text-rose-600 hover:text-rose-800 text-xs font-medium py-1.5 px-2 rounded-lg hover:bg-rose-50 transition">
+          <i class="fa-regular fa-trash-can mr-1"></i>删除
         </button>
         <div v-else></div>
-        <div class="space-x-2">
-          <button @click="$emit('update:show', false)" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-medium transition">取消</button>
-          <button @click="handleSave" class="px-5 py-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white rounded-xl text-xs font-semibold shadow-sm transition">
+        <div class="flex items-center space-x-2">
+          <button @click="$emit('update:show', false)" class="px-3.5 sm:px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold transition">取消</button>
+          <button @click="handleSave" class="px-4 sm:px-5 py-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white rounded-xl text-xs font-semibold shadow-sm transition">
             {{ isNew ? '保存车辆档案' : '保存修改' }}
           </button>
         </div>

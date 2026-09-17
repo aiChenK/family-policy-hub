@@ -4,7 +4,7 @@
       <table class="w-full border-separate border-spacing-0 text-xs text-left min-w-[1100px]">
         <thead class="bg-slate-50 font-semibold text-slate-600">
           <tr>
-            <th class="sticky left-0 z-20 bg-slate-50 py-3.5 px-4 whitespace-nowrap min-w-[120px] shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] border-r border-b border-slate-200/80">
+            <th class="sticky left-0 z-20 bg-slate-50 py-3 sm:py-3.5 px-2.5 sm:px-4 whitespace-nowrap min-w-[84px] sm:min-w-[120px] shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] border-r border-b border-slate-200/80">
               被保人
             </th>
             <th class="py-3.5 px-4 whitespace-nowrap min-w-[90px] border-b border-slate-200/80">险种</th>
@@ -16,7 +16,8 @@
             <th class="py-3.5 px-4 whitespace-nowrap min-w-[130px] border-b border-slate-200/80">保费(频次)</th>
             <th class="py-3.5 px-4 whitespace-nowrap min-w-[130px] border-b border-slate-200/80">扣款卡 / 渠道</th>
             <th class="py-3.5 px-4 whitespace-nowrap min-w-[90px] border-b border-slate-200/80">状态</th>
-            <th class="sticky right-0 z-20 bg-slate-50 py-3.5 px-4 text-right whitespace-nowrap min-w-[150px] shadow-[-2px_0_4px_-1px_rgba(0,0,0,0.06)] border-l border-b border-slate-200/80">
+            <!-- 尾列操作：大屏固定右侧，手机端随横滑自由展示 -->
+            <th class="sm:sticky sm:right-0 sm:z-20 bg-slate-50 py-3 sm:py-3.5 px-3 sm:px-4 text-right whitespace-nowrap min-w-[120px] sm:min-w-[150px] sm:shadow-[-2px_0_4px_-1px_rgba(0,0,0,0.06)] sm:border-l border-b border-slate-200/80">
               操作
             </th>
           </tr>
@@ -27,9 +28,9 @@
             :key="pol.id"
             class="group hover:bg-slate-50/80 transition-colors"
           >
-            <!-- 首列吸顶：被保人 -->
+            <!-- 首列吸顶：被保人 (小屏紧凑内边距) -->
             <td
-              class="sticky left-0 z-10 py-3 px-4 whitespace-nowrap shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] border-r border-b border-slate-100 font-bold text-slate-900 bg-white group-hover:bg-slate-50/90 transition-colors"
+              class="sticky left-0 z-10 py-2.5 sm:py-3 px-2.5 sm:px-4 whitespace-nowrap shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] border-r border-b border-slate-100 font-bold text-slate-900 bg-white group-hover:bg-slate-50/90 transition-colors"
             >
               <div v-if="pol.isFamilyPolicy" class="space-y-1">
                 <div class="flex items-center space-x-1.5">
@@ -88,9 +89,9 @@
               <span v-else class="text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full font-medium">已停保</span>
             </td>
 
-            <!-- 尾列吸顶：操作 -->
+            <!-- 尾列操作：大屏固定右侧，手机端随横滑自由展示 -->
             <td
-              class="sticky right-0 z-10 py-3 px-4 text-right whitespace-nowrap shadow-[-2px_0_4px_-1px_rgba(0,0,0,0.06)] border-l border-b border-slate-100 bg-white group-hover:bg-slate-50/90 transition-colors space-x-2"
+              class="sm:sticky sm:right-0 sm:z-10 py-2.5 sm:py-3 px-3 sm:px-4 text-right whitespace-nowrap sm:shadow-[-2px_0_4px_-1px_rgba(0,0,0,0.06)] sm:border-l border-b border-slate-100 bg-white group-hover:bg-slate-50/90 transition-colors space-x-2"
             >
               <button
                 @click="$emit('view-policy-payments', pol)"

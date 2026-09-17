@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-sky-300 transition-all duration-200 p-5 flex flex-col justify-between group relative overflow-hidden"
+    class="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-sky-300 transition-all duration-200 p-4 sm:p-5 flex flex-col justify-between group relative overflow-hidden"
     :class="{ 'opacity-70 bg-slate-50/70 border-slate-200': pol.status === 'stopped' }"
   >
     <!-- 左侧状态指示竖条 -->
@@ -12,16 +12,16 @@
     <div>
       <!-- 顶栏：被保人姓名、险种Badge、公司、投保人关系、停保标识 -->
       <div class="flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2 flex-wrap min-w-0">
-          <div v-if="pol.isFamilyPolicy" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-50 text-purple-800 font-bold text-xs whitespace-nowrap border border-purple-200/90 shrink-0 shadow-2xs" :title="'参保家属：' + (pol.insuredMembers || []).join('、')">
+        <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
+          <div v-if="pol.isFamilyPolicy" class="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-purple-50 text-purple-800 font-bold text-xs whitespace-nowrap border border-purple-200/90 shrink-0 shadow-2xs" :title="'参保家属：' + (pol.insuredMembers || []).join('、')">
             <i class="fa-solid fa-people-roof text-[11px] text-purple-600"></i>
             <span>{{ (pol.insuredMembers && pol.insuredMembers.length > 0) ? (pol.insuredMembers.length <= 2 ? pol.insuredMembers.join('、') : `${pol.insuredMembers.slice(0, 2).join('、')}等${pol.insuredMembers.length}人`) : pol.member }}</span>
           </div>
-          <div v-else class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 font-bold text-xs whitespace-nowrap border border-sky-100/90 shrink-0 shadow-2xs">
+          <div v-else class="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-sky-50 text-sky-800 font-bold text-xs whitespace-nowrap border border-sky-100/90 shrink-0 shadow-2xs">
             <i class="fa-solid fa-user-shield text-[11px] text-sky-600"></i>
             <span>{{ pol.member }}</span>
           </div>
-          <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap shadow-2xs shrink-0" :class="getTypeBadgeClass(pol.type)">
+          <span class="text-xs font-semibold px-2 sm:px-2.5 py-0.5 rounded-full whitespace-nowrap shadow-2xs shrink-0" :class="getTypeBadgeClass(pol.type)">
             {{ pol.type }}
           </span>
           <span class="text-xs text-slate-500 font-medium truncate shrink min-w-0" :title="pol.company">
@@ -33,7 +33,7 @@
           <span v-if="pol.status === 'stopped'" class="text-[11px] bg-slate-200/80 text-slate-600 px-2 py-0.5 rounded-full font-medium border border-slate-300/60">
             已停保
           </span>
-          <span v-if="pol.applicant && (pol.applicant !== pol.member || pol.isFamilyPolicy)" class="text-[11px] bg-amber-50/90 text-amber-800 px-2 py-0.5 rounded-md border border-amber-200/60 inline-flex items-center gap-1" title="投保人家属">
+          <span v-if="pol.applicant && (pol.applicant !== pol.member || pol.isFamilyPolicy)" class="text-[11px] bg-amber-50/90 text-amber-800 px-1.5 sm:px-2 py-0.5 rounded-md border border-amber-200/60 inline-flex items-center gap-1" title="投保人家属">
             <i class="fa-solid fa-hand-holding-heart text-[10px] text-amber-500"></i>
             <span>投保: {{ pol.applicant }}</span>
           </span>
@@ -41,8 +41,8 @@
       </div>
 
       <!-- 产品名称与保额/受益人指标 -->
-      <div class="mt-3.5">
-        <h4 class="text-base font-bold text-slate-900 group-hover:text-sky-700 transition leading-snug line-clamp-1" :title="pol.name">
+      <div class="mt-3 sm:mt-3.5">
+        <h4 class="text-sm sm:text-base font-bold text-slate-900 group-hover:text-sky-700 transition leading-snug line-clamp-1" :title="pol.name">
           {{ pol.name }}
         </h4>
         <div class="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-500">
@@ -74,7 +74,7 @@
         <button
           type="button"
           @click.stop="copyText(pol.policyNo, pol.id)"
-          class="text-sky-600 hover:text-sky-800 ml-2 text-[10px] font-medium inline-flex items-center gap-1 py-0.5 px-1.5 rounded hover:bg-sky-50 transition shrink-0 cursor-pointer"
+          class="text-sky-600 hover:text-sky-800 ml-2 text-[10px] font-medium inline-flex items-center gap-1 py-1 px-2 rounded-md hover:bg-sky-50 transition shrink-0 cursor-pointer"
           :title="copiedId === pol.id ? '已复制' : '复制保单号'"
         >
           <i :class="copiedId === pol.id ? 'fa-solid fa-check text-emerald-600' : 'fa-regular fa-copy'"></i>

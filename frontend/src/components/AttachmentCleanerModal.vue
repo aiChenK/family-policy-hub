@@ -1,65 +1,65 @@
 <template>
-  <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+  <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-2xl overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh]">
       <!-- 弹窗顶部标题 -->
-      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg border border-amber-200/50 shadow-sm">
+      <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <div class="flex items-center space-x-2.5 sm:space-x-3">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-base sm:text-lg border border-amber-200/50 shadow-sm shrink-0">
             <i class="fa-solid fa-broom"></i>
           </div>
           <div>
-            <h3 class="text-base font-bold text-slate-800 tracking-tight">附件存储分析与清理</h3>
-            <p class="text-xs text-slate-500">检测并清理未关联任何保单的冗余孤儿文件，减轻服务器存储与备份传输负担</p>
+            <h3 class="text-sm sm:text-base font-bold text-slate-800 tracking-tight">附件存储分析与清理</h3>
+            <p class="text-xs text-slate-500 line-clamp-1 sm:line-clamp-none">检测并清理未关联保单的冗余孤儿文件，减轻存储负担</p>
           </div>
         </div>
         <button
           type="button"
           @click="$emit('update:show', false)"
-          class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100 transition"
+          class="text-slate-400 hover:text-slate-600 p-1.5 sm:p-2 rounded-lg hover:bg-slate-100 transition"
         >
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
       <!-- 弹窗内容主体 -->
-      <div class="p-6 overflow-y-auto space-y-6 custom-scrollbar flex-1">
+      <div class="p-3.5 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 custom-scrollbar flex-1">
         <!-- 统计面板 -->
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
           <!-- 总附件 -->
-          <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/70">
+          <div class="p-3 sm:p-3.5 bg-slate-50 rounded-xl border border-slate-200/70">
             <div class="text-[11px] font-medium text-slate-500 flex items-center space-x-1.5">
               <i class="fa-regular fa-folder-open text-slate-400"></i>
               <span>附件总存储</span>
             </div>
-            <div class="mt-1.5 flex items-baseline space-x-1">
-              <span class="text-xl font-bold text-slate-800">{{ stats.totalSizeFormatted || '0 B' }}</span>
+            <div class="mt-1 flex items-baseline space-x-1">
+              <span class="text-lg sm:text-xl font-bold text-slate-800">{{ stats.totalSizeFormatted || '0 B' }}</span>
               <span class="text-xs text-slate-400 font-normal">({{ stats.totalFiles || 0 }} 个)</span>
             </div>
           </div>
 
           <!-- 在用附件 -->
-          <div class="p-3.5 bg-sky-50/60 rounded-xl border border-sky-100">
+          <div class="p-3 sm:p-3.5 bg-sky-50/60 rounded-xl border border-sky-100">
             <div class="text-[11px] font-medium text-sky-700 flex items-center space-x-1.5">
               <i class="fa-solid fa-shield-check text-sky-500"></i>
               <span>在保凭证</span>
             </div>
-            <div class="mt-1.5 flex items-baseline space-x-1">
-              <span class="text-xl font-bold text-sky-800">{{ stats.referencedFiles || 0 }}</span>
-              <span class="text-xs text-sky-600/70 font-normal">个文件正常引用</span>
+            <div class="mt-1 flex items-baseline space-x-1">
+              <span class="text-lg sm:text-xl font-bold text-sky-800">{{ stats.referencedFiles || 0 }}</span>
+              <span class="text-xs text-sky-600/70 font-normal">个正常引用</span>
             </div>
           </div>
 
           <!-- 冗余孤儿附件 -->
           <div
             :class="stats.orphanCount > 0 ? 'bg-amber-50/80 border-amber-200 text-amber-900' : 'bg-emerald-50/60 border-emerald-200/80 text-emerald-900'"
-            class="p-3.5 rounded-xl border transition"
+            class="p-3 sm:p-3.5 rounded-xl border transition"
           >
             <div class="text-[11px] font-medium flex items-center space-x-1.5" :class="stats.orphanCount > 0 ? 'text-amber-700' : 'text-emerald-700'">
               <i class="fa-solid" :class="stats.orphanCount > 0 ? 'fa-triangle-exclamation text-amber-500' : 'fa-circle-check text-emerald-500'"></i>
               <span>无引用孤儿文件</span>
             </div>
-            <div class="mt-1.5 flex items-baseline space-x-1">
-              <span class="text-xl font-bold">{{ stats.orphanSizeFormatted || '0 B' }}</span>
+            <div class="mt-1 flex items-baseline space-x-1">
+              <span class="text-lg sm:text-xl font-bold">{{ stats.orphanSizeFormatted || '0 B' }}</span>
               <span class="text-xs opacity-75 font-normal">({{ stats.orphanCount || 0 }} 个待清理)</span>
             </div>
           </div>
@@ -127,22 +127,23 @@
       </div>
 
       <!-- 弹窗底部操作栏 -->
-      <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+      <div class="px-4 sm:px-6 py-3 sm:py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between gap-2">
         <button
           type="button"
           @click="fetchOrphans"
           :disabled="scanning || cleaning"
-          class="inline-flex items-center space-x-1.5 px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition shadow-sm disabled:opacity-50"
+          class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition shadow-sm disabled:opacity-50"
         >
           <i class="fa-solid fa-arrows-rotate" :class="{ 'fa-spin': scanning }"></i>
-          <span>重新扫描</span>
+          <span class="hidden sm:inline">重新扫描</span>
+          <span class="sm:hidden">刷新</span>
         </button>
 
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2 sm:space-x-3">
           <button
             type="button"
             @click="$emit('update:show', false)"
-            class="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 rounded-xl transition"
+            class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-medium text-slate-600 hover:text-slate-800 rounded-xl transition"
           >
             关闭
           </button>
@@ -151,10 +152,10 @@
             type="button"
             @click="handleClean"
             :disabled="scanning || cleaning"
-            class="inline-flex items-center space-x-1.5 px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 rounded-xl transition shadow-md shadow-rose-200 disabled:opacity-50"
+            class="inline-flex items-center space-x-1 sm:space-x-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 rounded-xl transition shadow-md shadow-rose-200 disabled:opacity-50"
           >
             <i class="fa-solid" :class="cleaning ? 'fa-spinner fa-spin' : 'fa-trash-can'"></i>
-            <span>{{ cleaning ? '清理中...' : `一键安全清理 (${stats.orphanSizeFormatted})` }}</span>
+            <span>{{ cleaning ? '清理中...' : `一键清理 (${stats.orphanSizeFormatted})` }}</span>
           </button>
         </div>
       </div>

@@ -1,81 +1,109 @@
 <template>
   <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden">
-    <div class="p-6 space-y-4">
-      <!-- 卡片头部：车牌与车辆基本信息（舒展宽敞，防止截断） + 右侧在保状态胶囊 -->
-      <div class="flex items-start justify-between gap-3">
-        <div class="flex items-center space-x-3 min-w-0 flex-1">
+    <div class="p-4 sm:p-6 space-y-4">
+      <!-- 卡片头部：车牌与车辆基本信息 + 右侧在保状态胶囊 -->
+      <div class="space-y-2 sm:space-y-0 sm:flex sm:items-start sm:justify-between sm:gap-3">
+        <!-- 移动端第 1 行 / 桌面端左侧核心区：车牌与在保状态 -->
+        <div class="flex items-center justify-between sm:justify-start sm:space-x-3">
           <!-- 拟真车牌样式 (防折行、防压缩) -->
-          <div
-            v-if="veh.plateType === 'green'"
-            class="px-2.5 py-1.5 rounded-md bg-gradient-to-b from-white via-emerald-100 to-emerald-300 border-2 border-emerald-600 text-slate-950 font-extrabold font-mono text-xs sm:text-sm tracking-wider shadow-sm inline-flex items-center space-x-1 shrink-0 whitespace-nowrap select-none leading-none"
-            title="新能源汽车号牌"
-          >
-            <i class="fa-solid fa-bolt text-emerald-700 text-[10px] shrink-0"></i>
-            <span class="whitespace-nowrap inline-block">{{ veh.plateNo }}</span>
-          </div>
-          <div
-            v-else-if="veh.plateType === 'yellow'"
-            class="px-2.5 py-1.5 rounded-md bg-amber-300 border-2 border-amber-600 text-slate-900 font-extrabold font-mono text-xs sm:text-sm tracking-wider shadow-sm shrink-0 whitespace-nowrap select-none leading-none inline-flex items-center justify-center"
-          >
-            <span class="whitespace-nowrap inline-block">{{ veh.plateNo }}</span>
-          </div>
-          <div
-            v-else
-            class="px-2.5 py-1.5 rounded-md bg-blue-600 border-2 border-blue-400 text-white font-extrabold font-mono text-xs sm:text-sm tracking-wider shadow-sm shadow-blue-200 shrink-0 whitespace-nowrap select-none leading-none inline-flex items-center justify-center"
-          >
-            <span class="whitespace-nowrap inline-block">{{ veh.plateNo }}</span>
+          <div class="flex items-center space-x-2">
+            <div
+              v-if="veh.plateType === 'green'"
+              class="px-2.5 py-1.5 rounded-md bg-gradient-to-b from-white via-emerald-100 to-emerald-300 border-2 border-emerald-600 text-slate-950 font-extrabold font-mono text-xs sm:text-sm tracking-wider shadow-sm inline-flex items-center space-x-1 shrink-0 whitespace-nowrap select-none leading-none"
+              title="新能源汽车号牌"
+            >
+              <i class="fa-solid fa-bolt text-emerald-700 text-[10px] shrink-0"></i>
+              <span class="whitespace-nowrap inline-block">{{ veh.plateNo }}</span>
+            </div>
+            <div
+              v-else-if="veh.plateType === 'yellow'"
+              class="px-2.5 py-1.5 rounded-md bg-amber-300 border-2 border-amber-600 text-slate-900 font-extrabold font-mono text-xs sm:text-sm tracking-wider shadow-sm shrink-0 whitespace-nowrap select-none leading-none inline-flex items-center justify-center"
+            >
+              <span class="whitespace-nowrap inline-block">{{ veh.plateNo }}</span>
+            </div>
+            <div
+              v-else
+              class="px-2.5 py-1.5 rounded-md bg-blue-600 border-2 border-blue-400 text-white font-extrabold font-mono text-xs sm:text-sm tracking-wider shadow-sm shadow-blue-200 shrink-0 whitespace-nowrap select-none leading-none inline-flex items-center justify-center"
+            >
+              <span class="whitespace-nowrap inline-block">{{ veh.plateNo }}</span>
+            </div>
+
+            <!-- 公户车徽标 -->
+            <span
+              v-if="veh.isCompany || veh.companyName"
+              class="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-bold text-[10px] inline-flex items-center space-x-1 border border-indigo-200/80 shadow-2xs shrink-0"
+            >
+              <i class="fa-solid fa-building text-[9px]"></i>
+              <span>公户</span>
+            </span>
           </div>
 
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center space-x-2 flex-wrap">
-              <h4 class="text-base font-bold text-slate-900">{{ veh.model }}</h4>
-              <span
-                v-if="veh.isCompany || veh.companyName"
-                class="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-bold text-[10px] inline-flex items-center space-x-1 border border-indigo-200/80 shadow-2xs shrink-0"
-              >
-                <i class="fa-solid fa-building text-[9px]"></i>
-                <span>公户车</span>
-              </span>
-            </div>
-            <div class="text-xs text-slate-500 mt-0.5 flex flex-wrap items-center gap-1.5">
-              <template v-if="veh.isCompany || veh.companyName">
-                <span>所有人：<strong class="text-slate-700">{{ veh.companyName || veh.owner }}</strong></span>
-                <span v-if="veh.driver" class="text-indigo-600 font-medium shrink-0">(使用人: {{ veh.driver }})</span>
-                <button
-                  type="button"
-                  @click.stop="$emit('view-company', veh.companyName || veh.owner)"
-                  class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium text-[10px] border border-indigo-200/60 shadow-2xs transition cursor-pointer shrink-0"
-                  title="查看该公司的营业执照照片与开票税号"
-                >
-                  <i class="fa-regular fa-file-lines text-[9px]"></i>
-                  <span>执照/开票</span>
-                </button>
-              </template>
-              <template v-else>
-                <span>所有人：<strong class="text-slate-700">{{ veh.owner }}</strong></span>
-              </template>
-
-              <!-- 车辆专属档案证件：行驶证原件 (点击在新标签页查看原件，独立于车险保单) -->
-              <template v-if="veh.attachments && veh.attachments.length > 0">
-                <a
-                  v-for="(att, idx) in veh.attachments"
-                  :key="idx"
-                  :href="getAttachmentUrl(att.url)"
-                  target="_blank"
-                  class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 font-medium text-[10px] border border-sky-200/80 shadow-2xs transition cursor-pointer shrink-0"
-                  :title="'点击查看行驶证原件：' + att.name"
-                >
-                  <i class="fa-solid fa-id-card text-sky-600 text-[9px]"></i>
-                  <span>行驶证{{ veh.attachments.length > 1 ? `(${idx + 1})` : '' }}</span>
-                  <i class="fa-solid fa-arrow-up-right-from-square text-[8px] text-sky-500"></i>
-                </a>
-              </template>
-            </div>
+          <!-- 仅在小屏手机端显示的在保状态徽章 (右对齐，与车牌整洁呼应) -->
+          <div class="sm:hidden text-right shrink-0">
+            <span
+              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold shadow-2xs"
+              :class="getInsuranceStatusClass(veh)"
+            >
+              <i class="fa-solid mr-1 text-[9px]" :class="getInsuranceStatusIcon(veh)"></i>
+              <span>{{ getInsuranceStatusText(veh) }}</span>
+            </span>
           </div>
         </div>
 
-        <!-- 右侧：在保状态胶囊与到期日（彻底去掉重复保费，给左侧留足空间） -->
-        <div class="text-right shrink-0">
+        <!-- 车型信息与所有人归属 -->
+        <div class="min-w-0 flex-1 sm:mt-0 mt-1.5">
+          <!-- 车型大标题：整行舒展，不再被右侧徽章挤压折断 -->
+          <h4 class="text-sm sm:text-base font-bold text-slate-900 leading-snug">
+            {{ veh.model }}
+          </h4>
+
+          <!-- 所有人 / 行驶证 / 到期时间元信息行 -->
+          <div class="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+            <template v-if="veh.isCompany || veh.companyName">
+              <span>所有人：<strong class="text-slate-700 font-semibold">{{ veh.companyName || veh.owner }}</strong></span>
+              <span v-if="veh.driver" class="text-indigo-600 font-medium shrink-0">(使用人: {{ veh.driver }})</span>
+              <button
+                type="button"
+                @click.stop="$emit('view-company', veh.companyName || veh.owner)"
+                class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium text-[10px] border border-indigo-200/60 shadow-2xs transition cursor-pointer shrink-0"
+                title="查看该公司的营业执照照片与开票税号"
+              >
+                <i class="fa-regular fa-file-lines text-[9px]"></i>
+                <span>执照/开票</span>
+              </button>
+            </template>
+            <template v-else>
+              <span>所有人：<strong class="text-slate-700 font-semibold">{{ veh.owner }}</strong></span>
+            </template>
+
+            <!-- 车辆行驶证快捷查看 -->
+            <template v-if="veh.attachments && veh.attachments.length > 0">
+              <a
+                v-for="(att, idx) in veh.attachments"
+                :key="idx"
+                :href="getAttachmentUrl(att.url)"
+                target="_blank"
+                class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 font-medium text-[10px] border border-sky-200/80 shadow-2xs transition cursor-pointer shrink-0"
+                :title="'点击查看行驶证原件：' + att.name"
+              >
+                <i class="fa-solid fa-id-card text-sky-600 text-[9px]"></i>
+                <span>行驶证{{ veh.attachments.length > 1 ? `(${idx + 1})` : '' }}</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[8px] text-sky-500"></i>
+              </a>
+            </template>
+
+            <!-- 手机端到期日期轻量显示 -->
+            <span v-if="activePolicy?.endDate" class="sm:hidden text-[11px] text-slate-400 font-mono">
+              到期：{{ activePolicy.endDate }}
+            </span>
+            <span v-else-if="latestPolicy?.endDate" class="sm:hidden text-[11px] text-rose-500 font-mono">
+              已于 {{ latestPolicy.endDate }} 到期
+            </span>
+          </div>
+        </div>
+
+        <!-- 仅在平板/桌面端（sm及以上）显示的右侧状态胶囊与到期日 -->
+        <div class="hidden sm:block text-right shrink-0">
           <span
             class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold shadow-2xs"
             :class="getInsuranceStatusClass(veh)"
@@ -148,7 +176,7 @@
 
       <!-- 3. 有当前有效保单：现代金融凭证式左右分栏结构（无色块嵌套，唯一主金额） -->
       <template v-else>
-        <div class="rounded-2xl border border-slate-200/80 bg-slate-50/40 p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 text-xs">
+        <div class="rounded-2xl border border-slate-200/80 bg-slate-50/40 p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4 text-xs">
           <!-- 左侧分区：保障责任与机构服务 (占比 7/12) -->
           <div class="lg:col-span-7 space-y-2.5">
             <!-- 承保保司与报案专线 -->
@@ -326,7 +354,7 @@
     </div>
 
     <!-- 底部操作栏 -->
-    <div class="px-6 py-3 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-xs flex-wrap gap-2">
+    <div class="px-4 sm:px-6 py-3 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-xs flex-wrap gap-2">
       <div class="font-mono text-slate-400 text-[11px]">
         <span v-if="veh.vin">VIN: {{ veh.vin }}</span>
         <span v-else>初登: {{ veh.registerDate || '未登记' }}</span>

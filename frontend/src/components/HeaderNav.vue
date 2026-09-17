@@ -3,17 +3,17 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16 items-center">
         <!-- 1. 系统 Logo 与综合保障信息概览 -->
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-100 shrink-0">
-            <i class="fa-solid fa-shield-halved text-lg"></i>
+        <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-100 shrink-0">
+            <i class="fa-solid fa-shield-halved text-base sm:text-lg"></i>
           </div>
-          <div>
-            <div class="flex items-center space-x-2">
-              <h1 class="text-lg font-bold text-slate-900 tracking-tight">家庭保险管理系统</h1>
-              <span class="text-xs bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full font-medium">家庭资产保障</span>
+          <div class="min-w-0">
+            <div class="flex items-center space-x-1.5 sm:space-x-2">
+              <h1 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate">家庭保险管理系统</h1>
+              <span class="hidden sm:inline-flex text-xs bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full font-medium">家庭资产保障</span>
             </div>
-            <!-- 精准修正的家庭保障覆盖信息 -->
-            <p class="text-xs text-slate-500 mt-0.5 flex items-center flex-wrap gap-x-1.5">
+            <!-- 精准修正的家庭保障覆盖信息 (桌面端完整版) -->
+            <p class="text-xs text-slate-500 mt-0.5 hidden sm:flex items-center flex-wrap gap-x-1.5">
               <span class="font-medium text-slate-700">
                 {{ isAllCovered ? `全员 ${memberCount} 位成员在保` : `覆盖 ${coveredMemberCount}/${memberCount} 位成员` }}
               </span>
@@ -24,16 +24,26 @@
                 <span class="text-sky-700 font-medium">{{ vehicleCount }} 辆爱车在保</span>
               </template>
             </p>
+            <!-- 精准修正的家庭保障覆盖信息 (移动端精炼单行版) -->
+            <p class="text-[11px] text-slate-500 mt-0.5 flex sm:hidden items-center gap-x-1 truncate">
+              <span class="font-medium text-slate-700">{{ isAllCovered ? `${memberCount}人全保` : `${coveredMemberCount}/${memberCount}人` }}</span>
+              <span class="text-slate-300">·</span>
+              <span>{{ activePolicyCount }}笔保单</span>
+              <template v-if="vehicleCount > 0">
+                <span class="text-slate-300">·</span>
+                <span class="text-sky-700 font-medium">{{ vehicleCount }}车</span>
+              </template>
+            </p>
           </div>
         </div>
 
         <!-- 2. 右侧精简工具栏：状态胶囊 + 二级收拢菜单 + 锁定 -->
-        <div class="flex items-center space-x-3 relative">
+        <div class="flex items-center space-x-1.5 sm:space-x-3 relative shrink-0">
           <!-- 动态状态指示器 (遵循静默原则：服务正常时静默隐藏，仅在落盘中或离线异常时提醒) -->
           <transition name="fade">
             <div
               v-if="saving || !isApiConnected"
-              class="flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-medium border shadow-2xs transition-all duration-300"
+              class="flex items-center space-x-1.5 px-2 sm:px-3 py-1 rounded-full text-xs font-medium border shadow-2xs transition-all duration-300 shrink-0"
               :class="saving ? 'bg-amber-50 text-amber-700 border-amber-200/80' : 'bg-rose-50 text-rose-700 border-rose-200/80'"
               :title="saving ? '正在将修改原子同步落盘至本地文件' : '未能连接至后端服务，数据修改仅暂存在浏览器本地缓存中'"
             >
@@ -41,7 +51,7 @@
                 :class="saving ? 'fa-solid fa-arrows-rotate animate-spin text-amber-600' : 'fa-solid fa-triangle-exclamation text-rose-500'"
                 class="text-[11px]"
               ></i>
-              <span>{{ saving ? '正在同步落盘...' : '离线模式 (未连接服务)' }}</span>
+              <span class="hidden sm:inline">{{ saving ? '正在同步落盘...' : '离线模式' }}</span>
             </div>
           </transition>
 
@@ -49,20 +59,20 @@
           <div class="relative" ref="dropdownRef">
             <button
               @click="toggleDropdown"
-              class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition shadow-2xs border border-slate-200/70"
+              class="inline-flex items-center space-x-1.5 px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition shadow-2xs border border-slate-200/70"
               :class="dropdownOpen ? 'ring-2 ring-sky-500/20 bg-slate-200 text-sky-800' : ''"
               title="管理家庭主体档案、保司配置、数据备份与系统工具"
             >
               <i class="fa-solid fa-sliders text-sky-600"></i>
-              <span>管理与工具</span>
-              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" :class="dropdownOpen ? 'rotate-180 text-sky-600' : ''"></i>
+              <span class="hidden sm:inline">管理与工具</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200 hidden sm:inline" :class="dropdownOpen ? 'rotate-180 text-sky-600' : ''"></i>
             </button>
 
-            <!-- 二级下拉菜单抽屉浮层 -->
+            <!-- 二级下拉菜单抽屉浮层 (带屏幕边缘自适应保护) -->
             <transition name="dropdown">
               <div
                 v-if="dropdownOpen"
-                class="absolute right-0 mt-2 w-72 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 py-2 z-50 divide-y divide-slate-100 text-xs animate-in"
+                class="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 py-2 z-50 divide-y divide-slate-100 text-xs animate-in"
               >
                 <!-- 分组 1：主体档案与配置 -->
                 <div class="py-1">
@@ -202,16 +212,16 @@
             v-if="authState?.required && authState?.authenticated"
             @click="$emit('logout')"
             title="锁定并保护隐私"
-            class="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-semibold rounded-xl text-slate-600 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 transition shadow-2xs border border-slate-200/70"
+            class="inline-flex items-center space-x-1 px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-xl text-slate-600 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 transition shadow-2xs border border-slate-200/70 shrink-0"
           >
             <i class="fa-solid fa-lock text-slate-400 group-hover:text-rose-500"></i>
-            <span>锁定</span>
+            <span class="hidden sm:inline">锁定</span>
           </button>
         </div>
       </div>
 
-      <!-- 标签页导航栏 -->
-      <nav class="flex space-x-8 -mb-px overflow-x-auto custom-scrollbar">
+      <!-- 标签页导航栏 (桌面展示完整Tabs，移动端由底部MobileTabBar专属接管) -->
+      <nav class="hidden md:flex space-x-5 sm:space-x-8 -mb-px overflow-x-auto no-scrollbar py-0.5">
         <button
           v-for="tab in tabs"
           :key="tab.id"
@@ -221,14 +231,14 @@
               ? 'border-sky-600 text-sky-600 font-semibold'
               : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 font-medium'
           ]"
-          class="whitespace-nowrap py-3 px-1 border-b-2 text-sm flex items-center space-x-2 transition"
+          class="whitespace-nowrap py-2.5 sm:py-3 px-1 border-b-2 text-xs sm:text-sm flex items-center space-x-1.5 sm:space-x-2 transition"
         >
           <i :class="tab.icon"></i>
           <span>{{ tab.name }}</span>
           <span
             v-if="tab.badge"
             :class="tab.badgeClass || 'bg-slate-100 text-slate-600'"
-            class="ml-1.5 px-2 py-0.5 text-xs rounded-full font-medium"
+            class="ml-1 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs rounded-full font-medium"
           >
             {{ tab.badge }}
           </span>
