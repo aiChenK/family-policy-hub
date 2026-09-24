@@ -55,6 +55,7 @@
                 </label>
                 <select
                   v-model="form.vehicleId"
+                  @change="handleVehicleChange"
                   class="w-full bg-white border border-slate-200 rounded-xl p-2.5 font-bold text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500"
                   :disabled="lockVehicle"
                 >
@@ -74,6 +75,8 @@
                   <input
                     type="number"
                     v-model.number="form.year"
+                    @input="handleYearChange"
+                    @change="handleYearChange"
                     placeholder="如：2026"
                     class="w-full bg-white border border-slate-200 rounded-xl p-2.5 font-bold font-mono text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500"
                   />
@@ -138,7 +141,19 @@
                 <i class="fa-solid fa-coins text-amber-500"></i>
                 <span>2. 保费构成与返现结算</span>
               </span>
-              <span class="text-[10px] text-slate-400">支持只填总价，或分项自动汇总</span>
+              <div class="flex items-center space-x-2">
+                <button
+                  v-if="hasAnyPremiumValue"
+                  type="button"
+                  @click="clearPremiumFields"
+                  class="text-[10px] text-slate-400 hover:text-rose-600 transition flex items-center space-x-1 cursor-pointer"
+                  title="清空预填保费，全新手工录入"
+                >
+                  <i class="fa-regular fa-trash-can"></i>
+                  <span>清空金额</span>
+                </button>
+                <span class="text-[10px] text-slate-400">支持只填总价，或分项自动汇总</span>
+              </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
@@ -420,6 +435,68 @@ function handleBreakdownChange() {
 function applyBreakdownTotal() {
   props.form.totalPremium = breakdownTotal.value;
   isUserEditedTotal.value = false;
+}
+
+const hasAnyPremiumValue = computed(() => {
+  return (
+    (props.form.totalPremium !== null && props.form.totalPremium !== '' && props.form.totalPremium !== undefined) ||
+    (props.form.commercialPremium !== null && props.form.commercialPremium !== '' && props.form.commercialPremium !== undefined) ||
+    (props.form.compulsoryPremium !== null && props.form.compulsoryPremium !== '' && props.form.compulsoryPremium !== undefined) ||
+    (props.form.accidentPremium !== null && props.form.accidentPremium !== '' && props.form.accidentPremium !== undefined) ||
+    (props.form.cashback !== null && props.form.cashback !== '' && props.form.cashback !== undefined) ||
+    (props.form.tax !== null && props.form.tax !== '' && props.form.tax !== undefined && selectedVehicle.value?.plateType !== 'green')
+  );
+});
+
+function clearPremiumFields() {
+  props.form.totalPremium = null;
+  props.form.commercialPremium = null;
+  props.form.compulsoryPremium = null;
+  props.form.accidentPremium = null;
+  props.form.cashback = null;
+  if (selectedVehicle.value?.plateType !== 'green') {
+    props.form.tax = null;
+  }
+  isUserEditedTotal.value = false;
+}
+
+function handleYearChange() {
+  const y = Number(props.form.year);
+  if (!y || isNaN(y) || y < 1900 || y > 2100) return;
+  const yStr = String(Math.floor(y));
+  if (yStr.length !== 4) return;
+
+  // 联动保险起期年份与归档年度保持一致
+  let newStart = '';
+  if (props.form.startDate && typeof props.form.startDate === 'string' && props.form.startDate.includes('-')) {
+    const parts = props.form.startDate.split('-');
+    if (parts.length === 3) {
+      let mm = parts[1];
+      let dd = parts[2];
+      // 闰年2月29日安全保护
+      if (mm === '02' && dd === '29') {
+        const isLeapYear = (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
+        if (!isLeapYear) dd = '28';
+      }
+      newStart = `${yStr}-${mm}-${dd}`;
+    }
+  }
+
+  if (!newStart) {
+    const today = new Date();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    newStart = `${yStr}-${mm}-${dd}`;
+  }
+
+  props.form.startDate = newStart;
+  handleStartDateChange();
+}
+
+function handleVehicleChange() {
+  if (selectedVehicle.value?.plateType === 'green') {
+    props.form.tax = 0;
+  }
 }
 
 function handleStartDateChange() {
