@@ -22,11 +22,13 @@
         :active-policy-count="activePolicies.length"
         :vehicle-count="(data.vehicles || []).length"
         :company-count="(data.companies || []).length"
+        :ai-configured="aiSettings?.isConfigured"
         @update:current-tab="currentTab = $event"
         @open-phones="showPhoneModal = true"
         @open-members="(tab) => openMemberModal(tab === 'companies' ? 'companies' : 'members')"
         @open-companies="openMemberModal('companies')"
         @open-cleaner="showCleanerModal = true"
+        @open-ai-settings="showAiModal = true"
         @export-json="handleExportJson"
         @export-ics="handleExportIcs"
         @import-json="handleImportJson"
@@ -96,9 +98,11 @@
           :companies="data.companies || []"
           :phone-config="phoneConfig"
           :initial-filter-status="vehicleInitialFilterStatus"
+          :ai-settings="aiSettings"
           @save-vehicles="handleSaveVehicles"
           @open-companies="openMemberModal('companies')"
           @view-company="openMemberModal('companies', $event)"
+          @open-ai-settings="showAiModal = true"
         />
 
         <!-- Tab 4: 历年缴费台账与支出流水 -->
@@ -201,6 +205,13 @@
         @toast="showToast"
       />
 
+      <!-- AI 识单引擎配置模态框 -->
+      <AiSettingsModal
+        :show="showAiModal"
+        @update:show="showAiModal = $event"
+        @saved="handleAiSettingsSaved"
+      />
+
       <!-- 移动端专用吸底 TabBar -->
       <MobileTabBar
         :current-tab="currentTab"
@@ -244,6 +255,7 @@ import PolicyPaymentsModal from './components/policy/PolicyPaymentsModal.vue';
 import AttachmentCleanerModal from './components/AttachmentCleanerModal.vue';
 import InsurancePhoneModal from './components/InsurancePhoneModal.vue';
 import MemberManagementModal from './components/MemberManagementModal.vue';
+import AiSettingsModal from './components/AiSettingsModal.vue';
 
 // 视图引入
 import DashboardView from './views/DashboardView.vue';
@@ -258,6 +270,7 @@ const currentTab = ref('dashboard');
 const showCleanerModal = ref(false);
 const showPhoneModal = ref(false);
 const showMemberModal = ref(false);
+const showAiModal = ref(false);
 const memberModalTab = ref('members');
 const memberModalFocusCompany = ref('');
 const policyFilterMember = ref('');
@@ -276,6 +289,8 @@ const {
   saving,
   toast,
   phoneConfig,
+  aiSettings,
+  refreshAiSettings,
   showToast,
   clearSensitiveData,
   loadData,
@@ -286,6 +301,11 @@ const {
   handleUpdateMembers,
   handleCascadeRename
 } = useAppData();
+
+function handleAiSettingsSaved() {
+  refreshAiSettings();
+  showToast('AI 识单引擎配置已成功保存！');
+}
 
 // 3. 全局鉴权管理与安全拦截
 const {
@@ -305,6 +325,7 @@ const {
     showCleanerModal.value = false;
     showPhoneModal.value = false;
     showMemberModal.value = false;
+    showAiModal.value = false;
     memberModalTab.value = 'members';
     memberModalFocusCompany.value = '';
   },

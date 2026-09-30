@@ -314,6 +314,70 @@ export const AppApi = {
     });
     if (!res.ok) throw new Error('清理孤儿附件失败');
     return await res.json();
+  },
+
+  /**
+   * 获取 AI 识单引擎配置 (脱敏)
+   */
+  async getAiSettings() {
+    const res = await this.fetchWithAuth('/api/settings/ai');
+    if (!res.ok) throw new Error('获取 AI 配置失败');
+    return await res.json();
+  },
+
+  /**
+   * 保存 AI 识单引擎配置
+   */
+  async saveAiSettings(payload) {
+    const res = await this.fetchWithAuth('/api/settings/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('保存 AI 配置失败');
+    return await res.json();
+  },
+
+  /**
+   * 测试 AI 配置连接
+   */
+  async testAiSettings(payload) {
+    const res = await this.fetchWithAuth('/api/settings/ai/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('测试 AI 服务异常');
+    return await res.json();
+  },
+
+  /**
+   * 上传并使用 AI 解析车险保单 (PDF / 图片)
+   * 支持同时选择多个保单文件
+   */
+  async parseVehiclePolicy(files, plateNo = '') {
+    const formData = new FormData();
+    formData.append('plateNo', plateNo || '');
+    if (Array.isArray(files)) {
+      files.forEach((f, idx) => {
+        formData.append(`file_${idx}`, f);
+      });
+    } else if (files) {
+      formData.append('file_0', files);
+    }
+
+    const res = await this.fetchWithAuth('/api/vehicles/parse-policy', {
+      method: 'POST',
+      body: formData
+    });
+
+    const json = await res.json();
+    if (!res.ok) {
+      const err = new Error(json.detail || json.message || json.error || 'AI 保单解析失败');
+      err.data = json;
+      throw err;
+    }
+    return json;
   }
 };
 

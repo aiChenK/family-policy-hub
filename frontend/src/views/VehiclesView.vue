@@ -188,8 +188,10 @@
       :form="policyModal.form"
       :vehicles="vehicles"
       :lock-vehicle="policyModal.lockVehicle"
+      :ai-settings="aiSettings"
       @update:show="policyModal.show = $event"
       @save="handleSavePolicy"
+      @open-ai-settings="$emit('open-ai-settings')"
     />
 
     <!-- 3. 历年车险投保档案与凭证管理独立弹窗 -->
@@ -241,10 +243,11 @@ const props = defineProps({
   members: { type: Array, default: () => [] },
   companies: { type: Array, default: () => [] },
   phoneConfig: { type: Object, default: () => ({}) },
-  initialFilterStatus: { type: String, default: 'all' }
+  initialFilterStatus: { type: String, default: 'all' },
+  aiSettings: { type: Object, default: () => ({}) }
 });
 
-const emit = defineEmits(['save-vehicles', 'open-companies', 'view-company']);
+const emit = defineEmits(['save-vehicles', 'open-companies', 'view-company', 'open-ai-settings']);
 
 const searchQuery = ref('');
 const filterOwner = ref('');

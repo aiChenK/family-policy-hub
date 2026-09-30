@@ -57,6 +57,14 @@ const isApiConnected = ref(false);
 const saving = ref(false);
 const toast = ref({ show: false, message: '', type: 'success' });
 const phoneConfig = ref(deepClone(DEFAULT_PHONE_CONFIG));
+const aiSettings = ref({
+  enabled: false,
+  baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+  apiKey: '',
+  model: 'qwen-plus',
+  hasApiKey: false,
+  isConfigured: false
+});
 
 let toastTimer = null;
 const showToast = (msg, type = 'success') => {
@@ -108,6 +116,9 @@ export function useAppData() {
           phoneConfig.value = res.data.insurancePhones;
         }
       } catch (_) {}
+
+      // 加载 AI 识单引擎配置状态
+      await refreshAiSettings();
     } catch (e) {
       if (e.message === 'UNAUTHORIZED') {
         clearSensitiveData();
@@ -212,12 +223,21 @@ export function useAppData() {
     showToast(`已成功将 ${updatedPolicies} 笔保单与 ${updatedVehicles} 辆爱车归属人同步更新为【${newName}】！`);
   };
 
+  const refreshAiSettings = async () => {
+    try {
+      const res = await AppApi.getAiSettings();
+      aiSettings.value = res;
+    } catch (_) {}
+  };
+
   return {
     data,
     isApiConnected,
     saving,
     toast,
     phoneConfig,
+    aiSettings,
+    refreshAiSettings,
     showToast,
     clearSensitiveData,
     loadData,

@@ -21,6 +21,7 @@ PAYMENT_RECORDS_FILE = os.path.join(DATA_DIR, 'payment_records.json')
 VEHICLES_FILE = os.path.join(DATA_DIR, 'vehicles.json')
 COMPANIES_FILE = os.path.join(DATA_DIR, 'companies.json')
 INSURANCE_PHONES_FILE = os.path.join(DATA_DIR, 'insurance_phones.json')
+AI_SETTINGS_FILE = os.path.join(DATA_DIR, 'ai_settings.json')
 LEGACY_FILE = os.path.join(DATA_DIR, 'insurance_data.json')
 
 

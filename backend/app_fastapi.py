@@ -5,7 +5,7 @@ FastAPI 现代化异步 Web 应用构建器
 
 import os
 import datetime
-from . import config, auth, storage, utils
+from . import config, auth, storage, utils, ai_service
 
 def create_fastapi_app():
     """构建高性能 FastAPI 应用实例"""
@@ -193,6 +193,96 @@ def create_fastapi_app():
             raise HTTPException(status_code=400, detail="缺少文件名")
         success = storage.delete_attachment_file(category, filename)
         return {"status": "ok" if success else "not_found"}
+
+    # ==================== AI 识单引擎配置与解析 API ====================
+    @app.get("/api/settings/ai")
+    async def get_ai_settings(_: bool = Depends(check_auth)):
+        return storage.get_safe_ai_settings()
+
+    @app.post("/api/settings/ai")
+    async def update_ai_settings(payload: dict, _: bool = Depends(check_auth)):
+        return storage.save_ai_settings(payload)
+
+    @app.post("/api/settings/ai/test")
+    async def test_ai_settings_endpoint(payload: dict, _: bool = Depends(check_auth)):
+        # 若 payload 中 apiKey 带有掩码或为空，使用现有已存密钥
+        current = storage.load_ai_settings()
+        req_key = str(payload.get("apiKey", "")).strip()
+        if not req_key or "****" in req_key:
+            payload["apiKey"] = current.get("apiKey", "")
+        res = ai_service.test_ai_connection(payload)
+        return res
+
+    @app.post("/api/vehicles/parse-policy")
+    async def parse_vehicle_policy(request: Request, _: bool = Depends(check_auth)):
+        # 1. 检查 AI 识单引擎是否已配置并启用
+        ai_cfg = storage.load_ai_settings()
+        if not ai_cfg.get("enabled", False) or not ai_cfg.get("apiKey", "").strip():
+            raise HTTPException(
+                status_code=400,
+                detail="AI 识单引擎尚未配置或已关闭，请先在【管理与工具 -> AI 识单引擎配置】中设置 API Key 与模型"
+            )
+
+        content_type = request.headers.get("content-type", "")
+        file_items = []  # [(filename, bytes)]
+        plate_hint = ""
+
+        if "multipart/form-data" in content_type:
+            form = await request.form()
+            plate_hint = str(form.get("plateNo", "")).strip()
+            # 读取所有上传的文件 (可能为一个 file 或多个 files)
+            for key, val in form.multi_items():
+                if hasattr(val, "read") and hasattr(val, "filename"):
+                    b = await val.read()
+                    if b and len(b) > 0:
+                        file_items.append((val.filename, b))
+        else:
+            try:
+                payload = await request.json()
+            except Exception:
+                payload = {}
+            plate_hint = str(payload.get("plateNo", "")).strip()
+            raw_files = payload.get("files", [])
+            if not raw_files and payload.get("contentBase64"):
+                raw_files = [{
+                    "filename": payload.get("filename", "policy.pdf"),
+                    "contentBase64": payload.get("contentBase64")
+                }]
+            import base64
+            for rf in raw_files:
+                b64 = str(rf.get("contentBase64", ""))
+                if ',' in b64:
+                    b64 = b64.split(',', 1)[1]
+                if b64:
+                    file_items.append((rf.get("filename", "policy.pdf"), base64.b64decode(b64)))
+
+        if not file_items:
+            raise HTTPException(status_code=400, detail="未接收到需要解析的保单文件")
+
+        # 2. 调用 AI 解析
+        try:
+            policy_data = ai_service.parse_policy_files(file_items, ai_cfg)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"AI 保单解析异常: {e}")
+
+        # 3. 自动将上传文件保存至车辆附件目录
+        final_plate = plate_hint or policy_data.get("plateNo") or "vehicles"
+        final_year = policy_data.get("year") or datetime.datetime.now().year
+        subfolder = f"{final_plate}/{final_year}"
+
+        saved_attachments = []
+        for fname, fbytes in file_items:
+            try:
+                att = storage.save_attachment_bytes('vehicle', fname, fbytes, subfolder=subfolder)
+                saved_attachments.append(att)
+            except Exception as e:
+                print(f"[WARN] 自动归档解析附件失败 {fname}: {e}")
+
+        return {
+            "status": "ok",
+            "policyData": policy_data,
+            "attachments": saved_attachments
+        }
 
 
     @app.get("/favicon.ico")

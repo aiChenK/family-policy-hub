@@ -34,6 +34,183 @@
 
         <!-- 表单内容主体 -->
         <div class="p-6 overflow-y-auto space-y-5 text-xs custom-scrollbar flex-1">
+          <!-- 0. AI 智能识单卡片 (未配置时温和引导，已配置时支持拖拽/多选一键提取并预审) -->
+          <div
+            class="rounded-2xl border transition overflow-hidden shadow-2xs"
+            :class="aiSettings?.isConfigured ? 'bg-gradient-to-br from-indigo-50/70 via-sky-50/50 to-purple-50/40 border-indigo-200/80' : 'bg-slate-50 border-slate-200/80'"
+          >
+            <!-- A. 未配置 AI 引擎时的优雅提示条 -->
+            <div v-if="!aiSettings?.isConfigured" class="p-3.5 flex items-center justify-between gap-3 text-xs">
+              <div class="flex items-center space-x-2.5 text-slate-600">
+                <div class="w-7 h-7 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
+                  <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                </div>
+                <div>
+                  <span class="font-bold text-slate-800">支持 AI 智能识单自动填表：</span>
+                  <span class="text-slate-500">上传商业险/交强险 PDF 或照片，秒级提取保费明细与保单号</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                @click="$emit('open-ai-settings')"
+                class="inline-flex items-center space-x-1 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white rounded-xl text-xs font-semibold shadow-xs shrink-0 transition cursor-pointer"
+              >
+                <i class="fa-solid fa-sliders text-[11px]"></i>
+                <span>配置 AI 识单引擎</span>
+              </button>
+            </div>
+
+            <!-- B. 已配置 AI 引擎时的上传交互卡片 -->
+            <div v-else class="p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs shadow-xs">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                  </span>
+                  <span class="font-bold text-indigo-950 text-xs">AI 智能提取保单 (交强险 / 商业险 PDF 或照片)</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-indigo-100/80 text-indigo-700 border border-indigo-200/60">
+                    {{ aiSettings?.model || '大模型引擎' }}
+                  </span>
+                  <button
+                    type="button"
+                    @click="$emit('open-ai-settings')"
+                    class="text-slate-400 hover:text-indigo-600 text-[11px] p-1 transition cursor-pointer"
+                    title="修改 AI 识单引擎配置"
+                  >
+                    <i class="fa-solid fa-gear"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 上传托盘区域 (支持点击与拖拽，支持同时选商业险与交强险) -->
+              <div
+                v-if="!aiParsing && !aiParsedResult"
+                @dragover.prevent="isDragging = true"
+                @dragleave.prevent="isDragging = false"
+                @drop.prevent="handleAiDrop"
+                @click="triggerAiFileInput"
+                class="p-4 rounded-xl border-2 border-dashed transition cursor-pointer flex flex-col items-center justify-center text-center group"
+                :class="isDragging ? 'border-indigo-500 bg-indigo-50/80 scale-[0.99]' : 'border-indigo-200/80 bg-white/70 hover:bg-white hover:border-indigo-400'"
+              >
+                <input
+                  type="file"
+                  ref="aiFileInputRef"
+                  multiple
+                  accept=".pdf,image/*"
+                  class="hidden"
+                  @change="handleAiFileSelect"
+                />
+                <div class="w-10 h-10 rounded-2xl bg-indigo-50 group-hover:bg-indigo-100 text-indigo-600 flex items-center justify-center mb-2 transition shadow-inner">
+                  <i class="fa-solid fa-cloud-arrow-up text-lg group-hover:scale-110 transition-transform"></i>
+                </div>
+                <div class="text-xs font-bold text-slate-800">
+                  点击选择或拖入车险保单 <span class="text-indigo-600 font-extrabold">(支持同时选多个 PDF/图片)</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1 max-w-md">
+                  支持安盛、平安、人保、太保等全保司单据，AI 将自动归并商业险保费、交强险、车船税、单号及保障责任，并同步存为本期附件
+                </p>
+              </div>
+
+              <!-- 解析中动效 -->
+              <div v-else-if="aiParsing" class="py-6 px-4 bg-white/80 rounded-xl border border-indigo-200 text-center space-y-3">
+                <div class="relative w-12 h-12 mx-auto flex items-center justify-center">
+                  <div class="w-12 h-12 rounded-full border-3 border-indigo-200 border-t-indigo-600 animate-spin"></div>
+                  <i class="fa-solid fa-brain text-indigo-600 text-sm absolute"></i>
+                </div>
+                <div>
+                  <div class="font-bold text-indigo-950 text-xs">大模型正在深度解析保单合同...</div>
+                  <p class="text-[11px] text-slate-400 mt-0.5">正在提取保司、起止日期、保费明细、单号与责任条款，请稍候</p>
+                </div>
+              </div>
+
+              <!-- 识别错误提示条 -->
+              <div v-if="aiParseError" class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-start justify-between gap-2">
+                <div class="flex items-start space-x-2">
+                  <i class="fa-solid fa-circle-exclamation mt-0.5 text-rose-500"></i>
+                  <span>{{ aiParseError }}</span>
+                </div>
+                <button type="button" @click="aiParseError = ''" class="text-rose-400 hover:text-rose-600">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+
+              <!-- 识别结果确认面板 (对比与采纳) -->
+              <div v-if="aiParsedResult" class="bg-white rounded-xl border border-indigo-200 p-3.5 space-y-3 shadow-xs animate-in">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <span class="font-bold text-emerald-700 flex items-center space-x-1.5 text-xs">
+                    <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                    <span>保单信息识别成功！请核对以下提取明细：</span>
+                  </span>
+                  <span class="text-[10px] text-slate-400">已自动归档 {{ aiParsedResult.fileCount || 1 }} 份电子原件</span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+                  <div class="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                    <span class="text-slate-400 block text-[10px]">承保公司</span>
+                    <strong class="text-slate-800">{{ aiParsedResult.policyData?.company || '未识别' }}</strong>
+                  </div>
+                  <div class="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                    <span class="text-slate-400 block text-[10px]">归档年度 / 起止日期</span>
+                    <strong class="text-slate-800 font-mono">{{ aiParsedResult.policyData?.year }}年</strong>
+                    <span class="text-[10px] text-slate-400 block truncate">{{ aiParsedResult.policyData?.startDate }} 起</span>
+                  </div>
+                  <div class="p-2 rounded-lg bg-indigo-50/60 border border-indigo-100">
+                    <span class="text-indigo-600 block text-[10px] font-semibold">识别总保费</span>
+                    <strong class="text-indigo-950 font-bold font-mono text-xs">¥{{ formatMoney(aiParsedResult.policyData?.totalPremium) }}</strong>
+                  </div>
+                  <div class="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                    <span class="text-slate-400 block text-[10px]">费用分项提取</span>
+                    <span class="text-slate-700 font-mono text-[10px] block">商: ¥{{ aiParsedResult.policyData?.commercialPremium || 0 }} | 交: ¥{{ aiParsedResult.policyData?.compulsoryPremium || 0 }}</span>
+                    <span class="text-slate-500 font-mono text-[10px] block">税: ¥{{ aiParsedResult.policyData?.tax || 0 }}</span>
+                  </div>
+                </div>
+
+                <!-- 责任与单号概览条 -->
+                <div class="p-2 rounded-lg bg-slate-50 text-[11px] text-slate-600 flex flex-wrap gap-x-3 gap-y-1">
+                  <span v-if="aiParsedResult.policyData?.plateNo" class="font-medium">
+                    车牌: <strong class="text-slate-900 font-mono">{{ aiParsedResult.policyData?.plateNo }}</strong>
+                  </span>
+                  <span v-if="aiParsedResult.policyData?.commercialPolicyNo">
+                    商业单号: <strong class="text-slate-800 font-mono text-[10px]">{{ aiParsedResult.policyData?.commercialPolicyNo }}</strong>
+                  </span>
+                  <span v-if="aiParsedResult.policyData?.compulsoryPolicyNo">
+                    交强单号: <strong class="text-slate-800 font-mono text-[10px]">{{ aiParsedResult.policyData?.compulsoryPolicyNo }}</strong>
+                  </span>
+                  <span v-if="aiParsedResult.policyData?.thirdPartyAmount" class="text-sky-700 font-semibold">
+                    三者: {{ aiParsedResult.policyData?.thirdPartyAmount }}
+                  </span>
+                  <span v-if="aiParsedResult.policyData?.hasDamage" class="text-emerald-700 font-semibold">
+                    已含车损
+                  </span>
+                  <span v-if="aiParsedResult.policyData?.extra" class="text-purple-700 truncate max-w-full">
+                    特约: {{ aiParsedResult.policyData?.extra }}
+                  </span>
+                </div>
+
+                <!-- 采纳与重试操作 -->
+                <div class="flex items-center justify-end space-x-2 pt-1">
+                  <button
+                    type="button"
+                    @click="dismissAiResult"
+                    class="px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-100 text-xs transition cursor-pointer"
+                  >
+                    放弃此识别
+                  </button>
+                  <button
+                    type="button"
+                    @click="applyAiResult"
+                    class="inline-flex items-center space-x-1.5 px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm transition cursor-pointer"
+                  >
+                    <i class="fa-solid fa-check"></i>
+                    <span>一键采纳填入表单</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- 1. 基础信息卡片 (爱车、归档年度、保司、保险期间) -->
           <div class="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3.5">
             <div class="flex items-center justify-between">
@@ -354,6 +531,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { formatMoney } from '../utils/helpers.js';
+import { AppApi } from '../api/index.js';
 import VehiclePolicyPlanSection from './vehicle/VehiclePolicyPlanSection.vue';
 import VehiclePolicyAttachmentSection from './vehicle/VehiclePolicyAttachmentSection.vue';
 
@@ -362,10 +540,11 @@ const props = defineProps({
   isNew: { type: Boolean, default: true },
   form: { type: Object, required: true },
   vehicles: { type: Array, default: () => [] },
-  lockVehicle: { type: Boolean, default: false }
+  lockVehicle: { type: Boolean, default: false },
+  aiSettings: { type: Object, default: () => ({}) }
 });
 
-const emit = defineEmits(['update:show', 'save']);
+const emit = defineEmits(['update:show', 'save', 'open-ai-settings']);
 const attachmentSectionRef = ref(null);
 
 const isUserEditedTotal = ref(false);
@@ -529,10 +708,135 @@ function handleSave() {
   emit('save');
 }
 
+// ==================== AI 识单处理逻辑 ====================
+const aiFileInputRef = ref(null);
+const isDragging = ref(false);
+const aiParsing = ref(false);
+const aiParseError = ref('');
+const aiParsedResult = ref(null);
+
+function triggerAiFileInput() {
+  if (aiParsing.value) return;
+  aiFileInputRef.value?.click();
+}
+
+function handleAiDrop(e) {
+  isDragging.value = false;
+  if (aiParsing.value) return;
+  const files = Array.from(e.dataTransfer?.files || []);
+  if (files.length > 0) {
+    parseFiles(files);
+  }
+}
+
+function handleAiFileSelect(e) {
+  const files = Array.from(e.target?.files || []);
+  if (files.length > 0) {
+    parseFiles(files);
+  }
+  if (e.target) e.target.value = '';
+}
+
+async function parseFiles(files) {
+  for (const f of files) {
+    if (f.size > 30 * 1024 * 1024) {
+      alert(`文件 [${f.name}] 大小不能超过 30MB`);
+      return;
+    }
+  }
+
+  aiParsing.value = true;
+  aiParseError.value = '';
+  aiParsedResult.value = null;
+
+  try {
+    const plateHint = selectedVehicle.value?.plateNo || props.form.plateNo || '';
+    const res = await AppApi.parseVehiclePolicy(files, plateHint);
+    aiParsedResult.value = {
+      policyData: res.policyData || {},
+      attachments: res.attachments || [],
+      fileCount: files.length
+    };
+  } catch (err) {
+    console.error('[AI Parse Policy Error]', err);
+    aiParseError.value = err.message || 'AI 保单识别失败，请检查服务配置或重试';
+  } finally {
+    aiParsing.value = false;
+  }
+}
+
+function applyAiResult() {
+  if (!aiParsedResult.value?.policyData) return;
+  const pd = aiParsedResult.value.policyData;
+
+  // 1. 匹配或自动选中爱车
+  if (!props.lockVehicle && pd.plateNo) {
+    const matched = (props.vehicles || []).find(v => v.plateNo === pd.plateNo || (v.vin && pd.vin && v.vin.includes(pd.vin)));
+    if (matched) {
+      props.form.vehicleId = matched.id;
+    }
+  }
+
+  // 2. 基础信息
+  if (pd.company) props.form.company = pd.company;
+  if (pd.year) props.form.year = pd.year;
+  if (pd.startDate) props.form.startDate = pd.startDate;
+  if (pd.endDate) {
+    props.form.endDate = pd.endDate;
+  } else if (pd.startDate) {
+    handleStartDateChange();
+  }
+
+  // 3. 保费构成
+  if (pd.commercialPremium !== undefined) props.form.commercialPremium = pd.commercialPremium;
+  if (pd.compulsoryPremium !== undefined) props.form.compulsoryPremium = pd.compulsoryPremium;
+  if (pd.tax !== undefined) props.form.tax = pd.tax;
+  if (pd.accidentPremium !== undefined) props.form.accidentPremium = pd.accidentPremium;
+  if (pd.totalPremium !== undefined && pd.totalPremium > 0) {
+    props.form.totalPremium = pd.totalPremium;
+    isUserEditedTotal.value = true;
+  } else if (breakdownTotal.value > 0) {
+    props.form.totalPremium = breakdownTotal.value;
+  }
+
+  // 4. 保单号
+  if (pd.commercialPolicyNo) props.form.commercialPolicyNo = pd.commercialPolicyNo;
+  if (pd.compulsoryPolicyNo) props.form.compulsoryPolicyNo = pd.compulsoryPolicyNo;
+  if (pd.accidentPolicyNo) props.form.accidentPolicyNo = pd.accidentPolicyNo;
+
+  // 5. 责任方案
+  if (pd.hasDamage !== undefined) props.form.hasDamage = pd.hasDamage;
+  if (pd.hasMedicalExcluded !== undefined) props.form.hasMedicalExcluded = pd.hasMedicalExcluded;
+  if (pd.thirdPartyAmount) props.form.thirdPartyAmount = pd.thirdPartyAmount;
+  if (pd.driverAmount) props.form.driverAmount = pd.driverAmount;
+  if (pd.extra) props.form.extra = pd.extra;
+
+  // 6. 附件合并挂载
+  if (aiParsedResult.value.attachments && aiParsedResult.value.attachments.length > 0) {
+    if (!props.form.attachments) props.form.attachments = [];
+    aiParsedResult.value.attachments.forEach(att => {
+      if (!props.form.attachments.some(existing => existing.storedName === att.storedName)) {
+        props.form.attachments.push(att);
+      }
+    });
+  }
+
+  aiParsedResult.value = null;
+  aiParseError.value = '';
+}
+
+function dismissAiResult() {
+  aiParsedResult.value = null;
+  aiParseError.value = '';
+}
+
 watch(() => props.show, (newVal) => {
   if (newVal) {
     isUserEditedTotal.value = false;
     attachmentSectionRef.value?.cancelEditAttName();
+    aiParsing.value = false;
+    aiParseError.value = '';
+    aiParsedResult.value = null;
   }
 });
 </script>

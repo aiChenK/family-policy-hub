@@ -124,6 +124,34 @@
                     </div>
                     <i class="fa-solid fa-angle-right text-slate-300 text-[10px] group-hover:translate-x-0.5 transition-transform"></i>
                   </button>
+
+                  <button
+                    @click="triggerAction('open-ai-settings')"
+                    class="w-full text-left px-3.5 py-2 hover:bg-violet-50/80 text-slate-700 hover:text-violet-800 transition flex items-center justify-between group"
+                  >
+                    <div class="flex items-center space-x-2.5">
+                      <div class="w-6 h-6 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center text-xs group-hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                      </div>
+                      <div>
+                        <div class="font-medium text-slate-900 flex items-center space-x-1.5">
+                          <span>AI 识单引擎配置</span>
+                          <span
+                            class="w-1.5 h-1.5 rounded-full"
+                            :class="aiConfigured ? 'bg-emerald-500' : 'bg-slate-300'"
+                            :title="aiConfigured ? 'AI 引擎已就绪' : 'AI 引擎未配置'"
+                          ></span>
+                        </div>
+                        <div class="text-[10px] text-slate-400">PDF 与保单照片大模型智能解析</div>
+                      </div>
+                    </div>
+                    <span
+                      class="text-[10px] px-1.5 py-0.5 rounded font-bold"
+                      :class="aiConfigured ? 'bg-emerald-100/70 text-emerald-700' : 'bg-slate-100 text-slate-400'"
+                    >
+                      {{ aiConfigured ? '已就绪' : '未配置' }}
+                    </span>
+                  </button>
                 </div>
 
                 <!-- 分组 2：数据安全与灾备 -->
@@ -262,7 +290,8 @@ const props = defineProps({
   isAllCovered: { type: Boolean, default: false },
   activePolicyCount: { type: Number, default: 0 },
   vehicleCount: { type: Number, default: 0 },
-  companyCount: { type: Number, default: 0 }
+  companyCount: { type: Number, default: 0 },
+  aiConfigured: { type: Boolean, default: false }
 });
 
 const emit = defineEmits([
@@ -274,6 +303,7 @@ const emit = defineEmits([
   'open-phones',
   'open-members',
   'open-companies',
+  'open-ai-settings',
   'logout'
 ]);
 

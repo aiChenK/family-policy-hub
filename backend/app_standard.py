@@ -9,7 +9,51 @@ import json
 import datetime
 from urllib.parse import urlparse
 from http.server import SimpleHTTPRequestHandler
-from . import config, auth, storage, utils
+import re
+from urllib.parse import unquote
+from . import config, auth, storage, utils, ai_service
+
+
+def parse_multipart_payload(content_type: str, raw_bytes: bytes) -> tuple:
+    """健壮解析 multipart/form-data 字节流，原生支持 UTF-8 中文文件名与单/多文件，彻底杜绝 Header 类型错误"""
+    m = re.search(r'boundary=([^;]+)', content_type, re.IGNORECASE)
+    if not m:
+        return {}, []
+    boundary = m.group(1).strip('"\'').encode('latin-1')
+    delimiter = b'--' + boundary
+
+    parts = raw_bytes.split(delimiter)
+    fields = {}
+    files = []
+
+    for part in parts:
+        part = part.strip(b'\r\n')
+        if not part or part == b'--':
+            continue
+        if b'\r\n\r\n' in part:
+            header_bytes, payload = part.split(b'\r\n\r\n', 1)
+        elif b'\n\n' in part:
+            header_bytes, payload = part.split(b'\n\n', 1)
+        else:
+            continue
+
+        header_text = header_bytes.decode('utf-8', errors='replace')
+        cd_match = re.search(r'Content-Disposition:\s*form-data;\s*([^;\r\n]+(?:;[^\r\n]+)*)', header_text, re.IGNORECASE)
+        if not cd_match:
+            continue
+
+        params_str = cd_match.group(1)
+        name_m = re.search(r'name=["\']?([^"\';\r\n]+)["\']?', params_str)
+        fname_m = re.search(r'filename\*?=(?:UTF-8\'\')?["\']?([^"\';\r\n]+)["\']?', params_str, re.IGNORECASE)
+
+        name = name_m.group(1) if name_m else ''
+        if fname_m:
+            filename = unquote(fname_m.group(1))
+            files.append((filename, payload))
+        elif name:
+            fields[name] = payload.decode('utf-8', errors='replace').strip()
+
+    return fields, files
 
 
 class StandardHandler(SimpleHTTPRequestHandler):
@@ -141,6 +185,9 @@ class StandardHandler(SimpleHTTPRequestHandler):
             elif path == '/api/insurance-phones':
                 self.send_json(200, storage.load_insurance_phones_data())
                 return
+            elif path == '/api/settings/ai':
+                self.send_json(200, storage.get_safe_ai_settings())
+                return
             elif path == '/api/data':
                 self.send_json(200, storage.get_aggregated_data())
                 return
@@ -251,25 +298,13 @@ class StandardHandler(SimpleHTTPRequestHandler):
                 content_type = self.headers.get('Content-Type', '')
                 if 'multipart/form-data' in content_type:
                     try:
-                        from email import message_from_bytes
-                        msg_bytes = f"Content-Type: {content_type}\r\n\r\n".encode('utf-8') + raw_bytes
-                        msg = message_from_bytes(msg_bytes)
-                        form_fields = {}
-                        file_bytes = b""
-                        filename = ""
-                        for part in msg.walk():
-                            cd = part.get("Content-Disposition", "")
-                            if "form-data" in cd:
-                                params = dict(part.get_params(header="Content-Disposition"))
-                                name = params.get("name", "")
-                                if "filename" in params:
-                                    filename = params["filename"]
-                                    file_bytes = part.get_payload(decode=True) or b""
-                                else:
-                                    payload_part = part.get_payload(decode=True)
-                                    form_fields[name] = payload_part.decode('utf-8', errors='ignore') if payload_part else ""
+                        form_fields, files = parse_multipart_payload(content_type, raw_bytes)
                         cat = str(form_fields.get("category", "personal"))
                         subfolder = str(form_fields.get("subfolder", ""))
+                        if not files:
+                            self.send_json(400, {"error": "缺少上传文件"})
+                            return
+                        filename, file_bytes = files[0]
                         if not filename or not file_bytes:
                             self.send_json(400, {"error": "缺少上传文件或文件名"})
                             return
@@ -304,6 +339,82 @@ class StandardHandler(SimpleHTTPRequestHandler):
                 return
             elif path == '/api/attachments/orphans/clean':
                 self.send_json(200, storage.clean_orphan_attachments())
+                return
+            elif path == '/api/settings/ai':
+                res = storage.save_ai_settings(payload)
+                self.send_json(200, res)
+                return
+            elif path == '/api/settings/ai/test':
+                current = storage.load_ai_settings()
+                req_key = str(payload.get("apiKey", "")).strip()
+                if not req_key or "****" in req_key:
+                    payload["apiKey"] = current.get("apiKey", "")
+                res = ai_service.test_ai_connection(payload)
+                self.send_json(200, res)
+                return
+            elif path == '/api/vehicles/parse-policy':
+                ai_cfg = storage.load_ai_settings()
+                if not ai_cfg.get("enabled", False) or not ai_cfg.get("apiKey", "").strip():
+                    self.send_json(400, {
+                        "error": "not_configured",
+                        "message": "AI 识单引擎尚未配置或已关闭，请先在【管理与工具 -> AI 识单引擎配置】中设置 API Key 与模型"
+                    })
+                    return
+
+                content_type = self.headers.get('Content-Type', '')
+                file_items = []
+                plate_hint = ""
+
+                if 'multipart/form-data' in content_type:
+                    try:
+                        form_fields, files = parse_multipart_payload(content_type, raw_bytes)
+                        plate_hint = form_fields.get('plateNo', '').strip()
+                        file_items = files
+                    except Exception as e:
+                        self.send_json(500, {"error": f"解析上传文件失败: {e}"})
+                        return
+                else:
+                    plate_hint = str(payload.get("plateNo", "")).strip()
+                    raw_files = payload.get("files", [])
+                    if not raw_files and payload.get("contentBase64"):
+                        raw_files = [{
+                            "filename": payload.get("filename", "policy.pdf"),
+                            "contentBase64": payload.get("contentBase64")
+                        }]
+                    import base64
+                    for rf in raw_files:
+                        b64 = str(rf.get("contentBase64", ""))
+                        if ',' in b64:
+                            b64 = b64.split(',', 1)[1]
+                        if b64:
+                            file_items.append((rf.get("filename", "policy.pdf"), base64.b64decode(b64)))
+
+                if not file_items:
+                    self.send_json(400, {"error": "未接收到需要解析的保单文件"})
+                    return
+
+                try:
+                    policy_data = ai_service.parse_policy_files(file_items, ai_cfg)
+                except Exception as e:
+                    self.send_json(500, {"error": f"AI 保单解析异常: {e}"})
+                    return
+
+                final_plate = plate_hint or policy_data.get("plateNo") or "vehicles"
+                final_year = policy_data.get("year") or datetime.datetime.now().year
+                subfolder = f"{final_plate}/{final_year}"
+                saved_attachments = []
+                for fname, fbytes in file_items:
+                    try:
+                        att = storage.save_attachment_bytes('vehicle', fname, fbytes, subfolder=subfolder)
+                        saved_attachments.append(att)
+                    except Exception as e:
+                        print(f"[WARN] 自动归档解析附件失败 {fname}: {e}")
+
+                self.send_json(200, {
+                    "status": "ok",
+                    "policyData": policy_data,
+                    "attachments": saved_attachments
+                })
                 return
             else:
                 self.send_json(404, {"error": "API not found"})

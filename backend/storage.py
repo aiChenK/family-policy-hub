@@ -33,6 +33,12 @@ from .storage_attachments import (
     clean_orphan_attachments
 )
 
+from .storage_ai import (
+    load_ai_settings,
+    get_safe_ai_settings,
+    save_ai_settings
+)
+
 __all__ = [
     # JSON 结构化持久化
     "atomic_save_json",
@@ -57,5 +63,9 @@ __all__ = [
     "delete_attachment_file",
     "get_all_referenced_attachments",
     "scan_orphan_attachments",
-    "clean_orphan_attachments"
+    "clean_orphan_attachments",
+    # AI 引擎配置与管理
+    "load_ai_settings",
+    "get_safe_ai_settings",
+    "save_ai_settings"
 ]
